@@ -1,0 +1,6 @@
+base_url=http://d-scholarship.pitt.edu/cgi/oai2
+metadata_format=oai_dc
+xpath= /*[local-name()='OAI-PMH']/*[local-name()='ListRecords']/*
+xpath= /oai:OAI-PMH/oai:ListRecords/oai:record/oai:metadata/oai_dc:dc/dc:identifier
+storage_directory=C:\Users\agkau\Documents\oaipmh-storage
+
