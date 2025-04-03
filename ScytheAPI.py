@@ -25,7 +25,7 @@ def main():
         os.makedirs("metadata")
 
     try:
-        runScythe(base_url, metadataFormat, last_run_date, today)
+        runScythe(base_url, metadataFormat, last_run_date, today, config)
     except Exception as e:
         print(f"Error running Scythe: {e}")
     updateStateFile(today)
@@ -60,41 +60,55 @@ def updateStateFile(new_date):
         stateFile.write(new_date.strftime("%Y-%m-%d"))
     print(f"Updated state file with {new_date}")
 
-
-def saveMetadataToPDF(record, index):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    pdf.multi_cell(0, 10, str(record))
-    pdf_file = f"metadata/record_{index}.pdf"
-    pdf.output(pdf_file)
-    print(f"Saved metadata to {pdf_file}")
-
-
-def downloadPDF(pdf_url, index):
-    try:
-        response = httpx.get(pdf_url)
-        response.raise_for_status()
-        pdf_file = f"metadata/record_{index}.pdf"
-        with open(pdf_file, "wb") as file:
-            file.write(response.content)
-        print(f"Downloaded PDF to {pdf_file}")
-    except Exception as e:
-        print(f"Error downloading PDF from {pdf_url}: {e}")
-
-
-def extractPDFUrl(record):
-    try:
-        for line in str(record).split("<dc:identifier>"):
-            if line.startswith("http") and line.endswith(".pdf</dc:identifier>"):
-                return line.split("</dc:identifier>")[0]
-        return None
-    except Exception as e:
-        print(f"Error extracting PDF URL: {e}")
-        return None
+def process_records(records, config):
+    for record in records:
+        identifier = record.identifier
+        storage_path = os.path.join(config['metadata'], identifier)
+        
+        if os.path.exists(storage_path):
+            os.rmdir(storage_path)
+        
+        os.makedirs(storage_path, exist_ok=True)
+        
+        metadata_formats = record.get_metadata_formats()
+        for metadata_format in metadata_formats:
+            metadata = record.get_metadata(metadata_format)
+            metadata_file_path = os.path.join(storage_path, f"{identifier}.{metadata_format}")
+            
+            with open(metadata_file_path, 'w') as file:
+                file.write(metadata)
+            
+            if metadata_format == config['FILES_METADATA']: #need to check this 
+                file_uris = extract_file_uris(metadata, config['FILES_XPATH']) #need to add this as well
+                for file_uri in file_uris:
+                    fetch_and_store_file(file_uri, storage_path, identifier)
 
 
-def runScythe(endpoint, metadataFormat, last_run_date, today):
+def extract_file_uris(metadata, xpath):
+    # Parse the XML content from the metadata
+    root = ET.fromstring(metadata)
+    #need to investigate this and import the library
+    
+    # Use XPath to find all matching elements
+    file_uri_elements = root.findall(xpath)
+    
+    # Extract the text content of each matching element
+    file_uris = [element.text for element in file_uri_elements]
+    
+    return file_uris
+
+def fetch_and_store_file(file_uri, storage_path, identifier):
+    response = requests.get(file_uri)
+    file_name = os.path.basename(file_uri)
+    file_path = os.path.join(storage_path, 'files', file_name)
+    
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    
+    with open(file_path, 'wb') as file:
+        file.write(response.content)
+
+
+def runScythe(endpoint, metadataFormat, last_run_date, today, config):
     print(f"Querying endpoint: {endpoint} with format: {metadataFormat} from {last_run_date} to {today}")
     try:
         with Scythe(endpoint) as scythe:
@@ -104,12 +118,9 @@ def runScythe(endpoint, metadataFormat, last_run_date, today):
                 until=today.strftime("%Y-%m-%d")
             )
             tempNumRecords = 0
+            process_records(records, config)
             for index, record in enumerate(records):
                 print(record)
-                saveMetadataToPDF(record, index)
-                pdf_url = extractPDFUrl(record)
-                if pdf_url:
-                    downloadPDF(pdf_url, index)
                 tempNumRecords += 1
                 if tempNumRecords == 100:
                     break  # Stop after 100 records for testing
