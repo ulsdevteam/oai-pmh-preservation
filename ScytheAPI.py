@@ -1,12 +1,13 @@
 import os
 import httpx
+import requests
 from datetime import datetime, date
 from oaipmh_scythe import Scythe
 import certifi
-from fpdf import FPDF
+from lxml import etree as ET  # For proper namespace and XPath handling
 
 # Configure SSL verification
-USE_SSL_VERIFICATION = True  # Set to False if you want to bypass SSL verification (not recommended)
+USE_SSL_VERIFICATION = True  # Set to False to bypass SSL verification (not recommended)
 
 # Ensure the system uses certifi's certificates
 if USE_SSL_VERIFICATION:
@@ -17,15 +18,15 @@ if USE_SSL_VERIFICATION:
 def main():
     config = readConfigFile()
     base_url = config["base_url"]
-    metadataFormat = config["metadata_format"]
+    metadata_format = config["metadata_format"]
     last_run_date, today = readStateFile()
 
-    # Create metadata folder if it doesn't exist
-    if not os.path.exists("metadata"):
-        os.makedirs("metadata")
+    # Create storage directory if it doesn't exist
+    if not os.path.exists(config["storage_directory"]):
+        os.makedirs(config["storage_directory"])
 
     try:
-        runScythe(base_url, metadataFormat, last_run_date, today, config)
+        runScythe(base_url, metadata_format, last_run_date, today, config)
     except Exception as e:
         print(f"Error running Scythe: {e}")
     updateStateFile(today)
@@ -39,7 +40,7 @@ def readConfigFile():
             if not line or "=" not in line:
                 continue
             key, value = line.split("=", 1)
-            config[key] = value
+            config[key.strip()] = value.strip()
     return config
 
 
@@ -60,60 +61,74 @@ def updateStateFile(new_date):
         stateFile.write(new_date.strftime("%Y-%m-%d"))
     print(f"Updated state file with {new_date}")
 
+
+def extract_file_uris(metadata, xpath_expr):
+    # Parse the XML content from the metadata string
+    root = ET.fromstring(metadata.encode("utf-8"))
+
+    # Define namespaces used in the XML
+    namespaces = {
+        'oai': 'http://www.openarchives.org/OAI/2.0/',
+        'oai_dc': 'http://www.openarchives.org/OAI/2.0/oai_dc/',
+        'dc': 'http://purl.org/dc/elements/1.1/'
+    }
+
+    # Evaluate XPath and filter for HTTP links
+    file_uri_elements = root.xpath(xpath_expr, namespaces=namespaces)
+    file_uris = [element.strip() for element in file_uri_elements if element.strip().startswith('http')]
+
+    return file_uris
+
+
 def process_records(records, config):
     for record in records:
         identifier = record.identifier
-        storage_path = os.path.join(config['metadata'], identifier)
-        
+        storage_path = os.path.join(config['storage_directory'], identifier)
+
         if os.path.exists(storage_path):
-            os.rmdir(storage_path)
-        
+            try:
+                os.rmdir(storage_path)
+            except OSError:
+                pass  # Skip if directory isn't empty or removable
+
         os.makedirs(storage_path, exist_ok=True)
-        
+
         metadata_formats = record.get_metadata_formats()
         for metadata_format in metadata_formats:
             metadata = record.get_metadata(metadata_format)
             metadata_file_path = os.path.join(storage_path, f"{identifier}.{metadata_format}")
-            
-            with open(metadata_file_path, 'w') as file:
+
+            with open(metadata_file_path, 'w', encoding='utf-8') as file:
                 file.write(metadata)
-            
-            if metadata_format == config['FILES_METADATA']: #need to check this 
-                file_uris = extract_file_uris(metadata, config['FILES_XPATH']) #need to add this as well
+
+            if metadata_format == config['metadata_format']:
+                file_uris = extract_file_uris(metadata, config['xpath'])
                 for file_uri in file_uris:
                     fetch_and_store_file(file_uri, storage_path, identifier)
 
 
-def extract_file_uris(metadata, xpath):
-    # Parse the XML content from the metadata
-    root = ET.fromstring(metadata)
-    #need to investigate this and import the library
-    
-    # Use XPath to find all matching elements
-    file_uri_elements = root.findall(xpath)
-    
-    # Extract the text content of each matching element
-    file_uris = [element.text for element in file_uri_elements]
-    
-    return file_uris
-
 def fetch_and_store_file(file_uri, storage_path, identifier):
-    response = requests.get(file_uri)
-    file_name = os.path.basename(file_uri)
-    file_path = os.path.join(storage_path, 'files', file_name)
-    
-    os.makedirs(os.path.dirname(file_path), exist_ok=True)
-    
-    with open(file_path, 'wb') as file:
-        file.write(response.content)
+    try:
+        response = requests.get(file_uri)
+        response.raise_for_status()
+        file_name = os.path.basename(file_uri)
+        file_path = os.path.join(storage_path, 'files', file_name)
+
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+        with open(file_path, 'wb') as file:
+            file.write(response.content)
+        print(f"Downloaded: {file_uri}")
+    except Exception as e:
+        print(f"Failed to download {file_uri}: {e}")
 
 
-def runScythe(endpoint, metadataFormat, last_run_date, today, config):
-    print(f"Querying endpoint: {endpoint} with format: {metadataFormat} from {last_run_date} to {today}")
+def runScythe(endpoint, metadata_format, last_run_date, today, config):
+    print(f"Querying endpoint: {endpoint} with format: {metadata_format} from {last_run_date} to {today}")
     try:
         with Scythe(endpoint) as scythe:
             records = scythe.list_records(
-                metadata_prefix=metadataFormat,
+                metadata_prefix=metadata_format,
                 from_=last_run_date.strftime("%Y-%m-%d"),
                 until=today.strftime("%Y-%m-%d")
             )
