@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" prefix="content: http://purl.org/rss/1.0/modules/content/ dc: http://purl.org/dc/terms/ foaf: http://xmlns.com/foaf/0.1/ og: http://ogp.me/ns# rdfs: http://www.w3.org/2000/01/rdf-schema# sioc: http://rdfs.org/sioc/ns# sioct: http://rdfs.org/sioc/types# skos: http://www.w3.org/2004/02/skos/core# xsd: http://www.w3.org/2001/XMLSchema#">
+<head profile="http://www.w3.org/1999/xhtml/vocab">
+<script type="text/javascript">
+(function(){
+window.ObNg=!!window.ObNg;try{(function(){(function(){var a=-1;a={A:++a,cc:"false"[a],a:++a,Ha:"false"[a],K:++a,$e:"[object Object]"[a],cb:(a[a]+"")[a],Ja:++a,bb:"true"[a],D:++a,M:++a,dc:"[object Object]"[a],o:++a,T:++a,tj:++a,sj:++a};try{a.Ga=(a.Ga=a+"")[a.M]+(a.wa=a.Ga[a.a])+(a.bc=(a.va+"")[a.a])+(!a+"")[a.Ja]+(a.xa=a.Ga[a.o])+(a.va="true"[a.a])+(a.fb="true"[a.K])+a.Ga[a.M]+a.xa+a.wa+a.va,a.bc=a.va+"true"[a.Ja]+a.xa+a.fb+a.va+a.bc,a.va=a.A[a.Ga][a.Ga],a.va(a.va(a.bc+'"\\'+a.a+a.M+a.a+a.cc+"\\"+a.D+a.A+"("+a.xa+"\\"+a.a+a.T+a.a+"\\"+a.a+
+a.o+a.A+a.bb+a.wa+a.cc+"\\"+a.D+a.A+"\\"+a.a+a.o+a.T+"\\"+a.a+a.M+a.a+"\\"+a.a+a.M+a.o+a.cb+a.wa+"\\"+a.a+a.o+a.T+"['\\"+a.a+a.o+a.A+a.Ha+"\\"+a.a+a.T+a.a+"false"[a.K]+a.wa+a.Ha+a.cb+"']\\"+a.D+a.A+"===\\"+a.D+a.A+"'\\"+a.a+a.o+a.Ja+a.xa+"\\"+a.a+a.o+a.K+"\\"+a.a+a.M+a.a+"\\"+a.a+a.M+a.o+"\\"+a.a+a.D+a.T+"')\\"+a.D+a.A+"{\\"+a.a+a.K+"\\"+a.a+a.a+"\\"+a.a+a.o+a.o+a.Ha+"\\"+a.a+a.o+a.K+"\\"+a.D+a.A+a.bb+a.cb+"\\"+a.a+a.o+a.o+a.dc+"\\"+a.a+a.T+a.a+a.fb+"\\"+a.a+a.M+a.K+"\\"+a.a+a.M+a.Ja+"\\"+a.a+a.o+
+a.A+"\\"+a.D+a.A+"=\\"+a.D+a.A+"\\"+a.a+a.o+a.T+"\\"+a.a+a.M+a.a+"\\"+a.a+a.M+a.o+a.cb+a.wa+"\\"+a.a+a.o+a.T+"['\\"+a.a+a.o+a.A+a.Ha+"\\"+a.a+a.T+a.a+"false"[a.K]+a.wa+a.Ha+a.cb+"'].\\"+a.a+a.o+a.K+a.bb+"\\"+a.a+a.o+a.A+"false"[a.K]+a.Ha+a.dc+a.bb+"(/.{"+a.a+","+a.D+"}/\\"+a.a+a.D+a.T+",\\"+a.D+a.A+a.cc+a.fb+"\\"+a.a+a.M+a.o+a.dc+a.xa+"\\"+a.a+a.M+a.a+a.wa+"\\"+a.a+a.M+a.o+"\\"+a.D+a.A+"(\\"+a.a+a.T+a.A+")\\"+a.D+a.A+"{\\"+a.a+a.K+"\\"+a.a+a.a+"\\"+a.a+a.a+"\\"+a.a+a.a+"\\"+a.a+a.o+a.K+a.bb+a.xa+
+a.fb+"\\"+a.a+a.o+a.K+"\\"+a.a+a.M+a.o+"\\"+a.D+a.A+"(\\"+a.a+a.T+a.A+"\\"+a.D+a.A+"+\\"+a.D+a.A+"\\"+a.a+a.T+a.A+").\\"+a.a+a.o+a.Ja+a.fb+a.$e+"\\"+a.a+a.o+a.Ja+a.xa+"\\"+a.a+a.o+a.K+"("+a.K+",\\"+a.D+a.A+a.D+")\\"+a.a+a.K+"\\"+a.a+a.a+"\\"+a.a+a.a+"});\\"+a.a+a.K+"}\\"+a.a+a.K+'"')())()}catch(d){a%=5}})();var b=84;
+try{var da,ma,ra=c(30)?0:1,sa=c(364)?0:1,ta=c(176)?0:1,wa=c(567)?0:1,za=c(597)?0:1;for(var Aa=(c(762),0);Aa<ma;++Aa)ra+=(c(672),2),sa+=c(63)?1:2,ta+=(c(489),2),wa+=(c(691),2),za+=c(398)?2:3;da=ra+sa+ta+wa+za;window.eb===da&&(window.eb=++da)}catch(a){window.eb=da}var e=!0;function f(a,d){a+=d;return a.toString(36)}
+function Ca(a){var d=27;a&&(document[q(d,145,132,142,132,125,132,135,132,143,148,110,143,124,143,128)]&&document[q(d,145,132,142,132,125,132,135,132,143,148,110,143,124,143,128)]!==q(d,145,132,142,132,125,135,128)||(e=!1));return e}function q(a){var d=arguments.length,g=[];for(var h=1;h<d;h++)g[h-1]=arguments[h]-a;return String.fromCharCode.apply(String,g)}function Da(){}Ca(window[Da[t(b,194,181,193,185)]]===Da);Ca(typeof ie9rgb4!==f(1242178186115,b));
+Ca(RegExp("\x3c")[f(1372121,b)](function(){return"\x3c"})&!RegExp(f(42805,b))[f(1372121,b)](function(){return"'x3'+'d';"}));
+var Ea=window[t(b,181,200,200,181,183,188,153,202,185,194,200)]||RegExp(q(b,193,195,182,189,208,181,194,184,198,195,189,184),f(-66,b))[f(1372121,b)](window["\x6e\x61vi\x67a\x74\x6f\x72"]["\x75\x73e\x72A\x67\x65\x6et"]),Ga=+new Date+(c(454)?863121:6E5),Ha,Ia,Ja,Ka=window[q(b,199,185,200,168,189,193,185,195,201,200)],Oa=Ea?c(412)?36850:3E4:c(799)?6502:6E3;
+document[t(b,181,184,184,153,202,185,194,200,160,189,199,200,185,194,185,198)]&&document[q(b,181,184,184,153,202,185,194,200,160,189,199,200,185,194,185,198)](t(b,202,189,199,189,182,189,192,189,200,205,183,188,181,194,187,185),function(a){var d=14;document[q(d,132,119,129,119,112,119,122,119,130,135,97,130,111,130,115)]&&(document[q(d,132,119,129,119,112,119,122,119,130,135,97,130,111,130,115)]===f(1058781969,d)&&a[t(d,119,129,98,128,131,129,130,115,114)]?Ja=!0:document[t(d,132,119,129,119,112,119,
+122,119,130,135,97,130,111,130,115)]===f(68616527652,d)&&(Ha=+new Date,Ja=!1,A()))});function A(){if(!document[q(67,180,184,168,181,188,150,168,175,168,166,183,178,181)])return!0;var a=+new Date;if(a>Ga&&(c(431)?519627:6E5)>a-Ha)return Ca(!1);var d=Ca(Ia&&!Ja&&Ha+Oa<a);Ha=a;Ia||(Ia=!0,Ka(function(){Ia=!1},c(787)?0:1));return d}A();var Qa=[c(637)?10938058:17795081,c(57)?2147483647:27611931586,c(787)?1459627670:1558153217];
+function t(a){var d=arguments.length,g=[];for(var h=1;h<d;++h)g.push(arguments[h]-a);return String.fromCharCode.apply(String,g)}function Sa(a){var d=38;a=typeof a===t(d,153,154,152,143,148,141)?a:a[q(d,154,149,121,154,152,143,148,141)](c(511)?27:36);var g=window[a];if(!g||!g[q(d,154,149,121,154,152,143,148,141)])return;var h=""+g;window[a]=function(k,l){Ia=!1;return g(k,l)};window[a][t(d,154,149,121,154,152,143,148,141)]=function(){return h}}for(var Ta=(c(850),0);Ta<Qa[f(1294399121,b)];++Ta)Sa(Qa[Ta]);
+Ca(!1!==window[t(b,163,182,162,187)]);window.Ra=window.Ra||{};window.Ra.mc="08a0794c4c1940006fac37c54a82fbeabe6b14b479c175ef05f9117def416285624aac5bb20a1839c345e1a5b3fcfcbc68eb76c267aa055c25a4b0ca9054299e5e04c377c6cdd215";function B(a){var d=+new Date;if(!document[q(40,153,157,141,154,161,123,141,148,141,139,156,151,154,105,148,148)]||d>Ga&&(c(363)?552173:6E5)>d-Ha)var g=Ca(!1);else g=Ca(Ia&&!Ja&&Ha+Oa<d),Ha=d,Ia||(Ia=!0,Ka(function(){Ia=!1},c(703)?0:1));return!(arguments[a]^g)}function c(a){return 20>a}(function(a){a||setTimeout(function(){var d=setTimeout(function(){},250);for(var g=0;g<=d;++g)clearTimeout(g)},500)})(!0);})();}catch(x){}finally{ie9rgb4=void(0);};function ie9rgb4(a,b){return a>>b>>0};
+
+})();
+
+</script>
+
+<script type="text/javascript" src="/TSPD/0812be273cab20004cac16fe985762980b11a15573a5ee02a026235db3446e0cbd2333ba4341e79f?type=9"></script>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="msapplication-TileColor" content="#2b5797"/>
+<meta name="msapplication-config" content="/sites/default/files/favicons/browserconfig.xml"/>
+<meta name="theme-color" content="#1c2957"/>
+  <title>Home | Community Engaged Scholarship Forum | University of Pittsburgh</title>
+  <style>
+@import url("/modules/system/system.base.css?sdwoqw");
+</style>
+<style media="screen">
+@import url("/sites/all/libraries/owl-carousel/owl.carousel.css?sdwoqw");
+@import url("/sites/all/libraries/owl-carousel/owl.theme.css?sdwoqw");
+@import url("/sites/all/libraries/owl-carousel/owl.transitions.css?sdwoqw");
+</style>
+<style>
+@import url("/sites/all/modules/entity/ldap/ldap_user/ldap_user.css?sdwoqw");
+@import url("/sites/all/modules/calendar/css/calendar_multiday.css?sdwoqw");
+@import url("/sites/all/modules/date/date_api/date.css?sdwoqw");
+@import url("/sites/all/modules/date/date_popup/themes/datepicker.1.7.css?sdwoqw");
+@import url("/sites/all/modules/fences/field.css?sdwoqw");
+@import url("/sites/all/modules/google_cse/google_cse.css?sdwoqw");
+@import url("/modules/node/node.css?sdwoqw");
+@import url("/sites/all/modules/siteimprove/css/siteimprove.css?sdwoqw");
+@import url("/sites/all/modules/entity/views/css/views.css?sdwoqw");
+@import url("/sites/all/modules/ckeditor/css/ckeditor.css?sdwoqw");
+</style>
+<style>
+@import url("/sites/all/modules/ctools/css/ctools.css?sdwoqw");
+@import url("/sites/all/modules/entity/ldap/ldap_servers/ldap_servers.admin.css?sdwoqw");
+@import url("/sites/all/modules/flexslider/assets/css/flexslider_img.css?sdwoqw");
+@import url("/sites/all/libraries/flexslider/flexslider.css?sdwoqw");
+</style>
+<link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.css" media="all" />
+<style>
+@import url("/sites/all/themes/bootstrap/css/3.3.7/overrides.min.css?sdwoqw");
+@import url("/sites/all/themes/pitt_theme/fonts/css/all.css?sdwoqw");
+@import url("/sites/all/themes/pitt_theme/fonts/css/light.min.css?sdwoqw");
+@import url("/sites/all/themes/pitt_theme/fonts/css/brands.min.css?sdwoqw");
+</style>
+<link type="text/css" rel="stylesheet" href="/sites/default/files/less/50yrIcO_FRVhRcdMSNr5GGDqAqQo_rFzx_Eg2Gxtl4A/sites/all/themes/pitt_theme/less/style.XcVzbo5GbrB4v7QVES377fts6uudS0o0YbaMpBamvPg.css?sdwoqw" media="all" src="sites/all/themes/pitt_theme/less/style.less" />
+  <!-- HTML5 element support for IE6-8 -->
+  <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <script src="/sites/all/modules/jquery_update/replace/jquery/1.9/jquery.js?v=1.9.1"></script>
+<script src="/misc/jquery.once.js?v=1.2"></script>
+<script src="/misc/drupal.js?sdwoqw"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.js"></script>
+<script src="/sites/all/modules/google_cse/google_cse.js?sdwoqw"></script>
+<script src="//pitt.edu/webtrends/webtrends.load.js"></script>
+<script src="/sites/all/libraries/jquery-actual/jquery.actual.min.js?sdwoqw"></script>
+<script src="/sites/all/modules/jcaption/jcaption.js?sdwoqw"></script>
+<script src="/sites/all/libraries/flexslider/jquery.flexslider-min.js?sdwoqw"></script>
+<script src="/sites/all/modules/google_analytics/googleanalytics.js?sdwoqw"></script>
+<script src="https://www.googletagmanager.com/gtag/js?id=G-J8L191G4E4"></script>
+<script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments)};gtag("js", new Date());gtag("set", "developer_id.dMDhkMT", true);gtag("config", "G-J8L191G4E4", {"groups":"default","anonymize_ip":true});</script>
+<script src="/sites/all/themes/pitt_theme/bootstrap/js/affix.js?sdwoqw"></script>
+<script src="/sites/all/themes/pitt_theme/bootstrap/js/alert.js?sdwoqw"></script>
+<script src="/sites/all/themes/pitt_theme/bootstrap/js/button.js?sdwoqw"></script>
+<script src="/sites/all/themes/pitt_theme/bootstrap/js/carousel.js?sdwoqw"></script>
+<script src="/sites/all/themes/pitt_theme/bootstrap/js/collapse.js?sdwoqw"></script>
+<script src="/sites/all/themes/pitt_theme/bootstrap/js/dropdown.js?sdwoqw"></script>
+<script src="/sites/all/themes/pitt_theme/bootstrap/js/modal.js?sdwoqw"></script>
+<script src="/sites/all/themes/pitt_theme/bootstrap/js/tooltip.js?sdwoqw"></script>
+<script src="/sites/all/themes/pitt_theme/bootstrap/js/popover.js?sdwoqw"></script>
+<script src="/sites/all/themes/pitt_theme/bootstrap/js/scrollspy.js?sdwoqw"></script>
+<script src="/sites/all/themes/pitt_theme/bootstrap/js/tab.js?sdwoqw"></script>
+<script src="/sites/all/themes/pitt_theme/bootstrap/js/transition.js?sdwoqw"></script>
+<script src="/sites/all/themes/pitt_theme/js/script.js?sdwoqw"></script>
+<script src="/sites/all/themes/pitt_theme/js/search.js?sdwoqw"></script>
+<script>jQuery.extend(Drupal.settings, {"basePath":"\/","pathPrefix":"","ajaxPageState":{"theme":"pitt_theme","theme_token":"hDYfblOGBUfpO1WGxI1PWWyBJ0X2jaV6jty0Ec1GLFo","js":{"sites\/all\/libraries\/owl-carousel\/owl.carousel.min.js":1,"sites\/all\/modules\/owlcarousel\/includes\/js\/owlcarousel.settings.js":1,"sites\/all\/modules\/flexslider\/assets\/js\/flexslider.load.js":1,"sites\/all\/themes\/bootstrap\/js\/bootstrap.js":1,"sites\/all\/modules\/jquery_update\/replace\/jquery\/1.9\/jquery.js":1,"misc\/jquery.once.js":1,"misc\/drupal.js":1,"https:\/\/cdn.jsdelivr.net\/npm\/bootstrap@3.3.7\/dist\/js\/bootstrap.js":1,"sites\/all\/modules\/google_cse\/google_cse.js":1,"\/\/pitt.edu\/webtrends\/webtrends.load.js":1,"sites\/all\/libraries\/jquery-actual\/jquery.actual.min.js":1,"sites\/all\/modules\/jcaption\/jcaption.js":1,"sites\/all\/libraries\/flexslider\/jquery.flexslider-min.js":1,"sites\/all\/modules\/google_analytics\/googleanalytics.js":1,"https:\/\/www.googletagmanager.com\/gtag\/js?id=G-J8L191G4E4":1,"0":1,"sites\/all\/themes\/pitt_theme\/bootstrap\/js\/affix.js":1,"sites\/all\/themes\/pitt_theme\/bootstrap\/js\/alert.js":1,"sites\/all\/themes\/pitt_theme\/bootstrap\/js\/button.js":1,"sites\/all\/themes\/pitt_theme\/bootstrap\/js\/carousel.js":1,"sites\/all\/themes\/pitt_theme\/bootstrap\/js\/collapse.js":1,"sites\/all\/themes\/pitt_theme\/bootstrap\/js\/dropdown.js":1,"sites\/all\/themes\/pitt_theme\/bootstrap\/js\/modal.js":1,"sites\/all\/themes\/pitt_theme\/bootstrap\/js\/tooltip.js":1,"sites\/all\/themes\/pitt_theme\/bootstrap\/js\/popover.js":1,"sites\/all\/themes\/pitt_theme\/bootstrap\/js\/scrollspy.js":1,"sites\/all\/themes\/pitt_theme\/bootstrap\/js\/tab.js":1,"sites\/all\/themes\/pitt_theme\/bootstrap\/js\/transition.js":1,"sites\/all\/themes\/pitt_theme\/js\/script.js":1,"sites\/all\/themes\/pitt_theme\/js\/search.js":1},"css":{"modules\/system\/system.base.css":1,"sites\/all\/libraries\/owl-carousel\/owl.carousel.css":1,"sites\/all\/libraries\/owl-carousel\/owl.theme.css":1,"sites\/all\/libraries\/owl-carousel\/owl.transitions.css":1,"sites\/all\/modules\/entity\/ldap\/ldap_user\/ldap_user.css":1,"sites\/all\/modules\/calendar\/css\/calendar_multiday.css":1,"sites\/all\/modules\/date\/date_api\/date.css":1,"sites\/all\/modules\/date\/date_popup\/themes\/datepicker.1.7.css":1,"modules\/field\/theme\/field.css":1,"sites\/all\/modules\/google_cse\/google_cse.css":1,"modules\/node\/node.css":1,"sites\/all\/modules\/siteimprove\/css\/siteimprove.css":1,"sites\/all\/modules\/entity\/views\/css\/views.css":1,"sites\/all\/modules\/ckeditor\/css\/ckeditor.css":1,"sites\/all\/modules\/ctools\/css\/ctools.css":1,"sites\/all\/modules\/entity\/ldap\/ldap_servers\/ldap_servers.admin.css":1,"sites\/all\/modules\/flexslider\/assets\/css\/flexslider_img.css":1,"sites\/all\/libraries\/flexslider\/flexslider.css":1,"https:\/\/cdn.jsdelivr.net\/npm\/bootstrap@3.3.7\/dist\/css\/bootstrap.css":1,"sites\/all\/themes\/bootstrap\/css\/3.3.7\/overrides.min.css":1,"sites\/all\/themes\/pitt_theme\/fonts\/css\/fontawsome.min.css":1,"sites\/all\/themes\/pitt_theme\/fonts\/css\/all.css":1,"sites\/all\/themes\/pitt_theme\/fonts\/css\/light.min.css":1,"sites\/all\/themes\/pitt_theme\/fonts\/css\/brands.min.css":1,"sites\/all\/themes\/pitt_theme\/less\/style.less":1}},"googleCSE":{"cx":"","language":"","resultsWidth":600,"domain":"www.google.com","showWaterMark":1},"jcaption":{"jcaption_selectors":[".region-content article img"],"jcaption_alt_title":"title","jcaption_requireText":1,"jcaption_copyStyle":1,"jcaption_removeStyle":1,"jcaption_removeClass":0,"jcaption_removeAlign":1,"jcaption_copyAlignmentToClass":0,"jcaption_copyFloatToClass":1,"jcaption_copyClassToClass":0,"jcaption_autoWidth":1,"jcaption_keepLink":0,"jcaption_styleMarkup":"","jcaption_animate":0,"jcaption_showDuration":"200","jcaption_hideDuration":"200"},"better_exposed_filters":{"views":{"title_block":{"displays":{"header_title_block":{"filters":[]},"footer_title_block":{"filters":[]}}},"feature_image_story":{"displays":{"centered_buttons":{"filters":[]}}},"slider":{"displays":{"block_1":{"filters":[]},"block":{"filters":[]}}},"icon_set":{"displays":{"icon_block":{"filters":[]}}},"home_page_news_and_events":{"displays":{"block_1":{"filters":[]}}},"social_media_icons":{"displays":{"footer_social_block":{"filters":[]}}}}},"owlcarousel":{"owlcarousel-fields-205":{"settings":{"items":5,"itemsDesktop":["1199",4],"itemsDesktopSmall":["979",3],"itemsTablet":["768",2],"itemsTabletSmall":["0",0],"itemsMobile":["479",1],"singleItem":true,"itemsScaleUp":false,"slideSpeed":200,"paginationSpeed":800,"rewindSpeed":1000,"autoPlay":"5000","stopOnHover":true,"navigation":true,"navigationText":["prev","next"],"rewindNav":true,"scrollPerPage":false,"pagination":false,"paginationNumbers":false,"responsive":true,"responsiveRefreshRate":200,"baseClass":"owl-carousel","theme":"owl-theme","lazyLoad":false,"lazyFollow":true,"lazyEffect":"fadeIn","autoHeight":true,"jsonPath":false,"jsonSuccess":false,"dragBeforeAnimFinish":true,"mouseDrag":false,"touchDrag":false,"addClassActive":true,"transitionStyle":"ease"},"views":{"ajax_pagination":0}}},"flexslider":{"optionsets":{"feature_image":{"namespace":"flex-","selector":".slides \u003E li","easing":"swing","direction":"horizontal","reverse":false,"smoothHeight":false,"startAt":0,"animationSpeed":600,"initDelay":0,"useCSS":true,"touch":true,"video":false,"keyboard":true,"multipleKeyboard":false,"mousewheel":0,"controlsContainer":".flex-control","sync":"","asNavFor":"","itemWidth":0,"itemMargin":0,"minItems":0,"maxItems":0,"move":0,"animation":"fade","slideshow":true,"slideshowSpeed":"7000","directionNav":false,"controlNav":true,"prevText":"Previous","nextText":"Next","pausePlay":false,"pauseText":"Pause","playText":"Play","randomize":false,"thumbCaptions":false,"thumbCaptionsBoth":false,"animationLoop":true,"pauseOnAction":true,"pauseOnHover":true,"manualControls":""}},"instances":{"flexslider-1":"feature_image"}},"googleanalytics":{"account":["G-J8L191G4E4"],"trackOutbound":1,"trackMailto":1,"trackDownload":1,"trackDownloadExtensions":"7z|aac|arc|arj|asf|asx|avi|bin|csv|doc(x|m)?|dot(x|m)?|exe|flv|gif|gz|gzip|hqx|jar|jpe?g|js|mp(2|3|4|e?g)|mov(ie)?|msi|msp|pdf|phps|png|ppt(x|m)?|pot(x|m)?|pps(x|m)?|ppam|sld(x|m)?|thmx|qtm?|ra(m|r)?|sea|sit|tar|tgz|torrent|txt|wav|wma|wmv|wpd|xls(x|m|b)?|xlt(x|m)|xlam|xml|z|zip"},"urlIsAjaxTrusted":{"\/":true},"bootstrap":{"anchorsFix":"0","anchorsSmoothScrolling":"0","formHasError":1,"popoverEnabled":1,"popoverOptions":{"animation":1,"html":0,"placement":"right","selector":"","trigger":"click","triggerAutoclose":1,"title":"","content":"","delay":0,"container":"body"},"tooltipEnabled":1,"tooltipOptions":{"animation":1,"html":0,"placement":"auto left","selector":"","trigger":"hover focus","delay":0,"container":"body"}}});</script>
+
+<link type="text/css" href="/sites/all/libraries/lavalamp/css/jquery.lavalamp.css" rel="stylesheet" media="screen" />
+<script type="text/javascript" src="/sites/all/libraries/lavalamp/js/jquery.lavalamp.min.js"></script>
+  
+</head>
+
+<body class="html front not-logged-in one-sidebar sidebar-second page-node page-node- page-node-233 node-type-page pitt_dark" >
+  <div id="skip-link">
+    <a href="#main-content" class="element-invisible element-focusable">Skip to main content</a>
+  </div>
+    <div class="header_wrap">
+  
+<div class="container hb">
+
+  <div class="row">
+    <div class="col-xs-12 col-sm-8 logo_space">
+      <div class="pitt_shield">
+        <a href="http://www.pitt.edu">    
+          <img src="/sites/all/themes/pitt_theme/img/pitt_shield_white.png" width="261" alt="University of Pittsburgh logo" />
+        </a>
+      </div>
+      <div class="site_title_wrapper">
+                    <div class="region region-logo">
+    <section aria-label="" id="block-views-title-block-header-title-block" class="block block-views clearfix">
+
+      
+  
+<div class="view view-title-block view-id-title_block view-display-id-header_title_block site-info--title-block view-dom-id-02af9389b64debb0f4c9fab3a720559a">
+  
+      <div class="view-content">
+        
+      <div>
+      
+          <span class="single_title site_logo site-info__title"><a href="/">Community Engaged Scholarship Forum</a></span>    </div>
+    </div>
+  
+  
+
+</div>
+</section>
+  </div>
+          
+      </div><!--title_wrapper -->
+    </div>
+    
+    <div class="col-xs-12 col-sm-4 header_links">
+        <div class="navbar-header site-info__navbar-toggle">
+      			<!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+      			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".primary-links">
+      				<span class="sr-only">Toggle navigation</span>
+      				<span class="icon-bar"></span>
+      				<span class="icon-bar"></span>
+      				<span class="icon-bar"></span>
+      			</button>
+  		  </div>
+
+              <div class="pittbar__search">
+            <div class="region region-pre-nav">
+    <section aria-label="" id="block-search-form" class="block block-search clearfix">
+
+      
+  <form class="google-cse form-search content-search" action="/" method="post" id="search-block-form" accept-charset="UTF-8"><div>  
+  <div class="searchbox" role="search">
+    <label for="edit-search-block-form-1" class="hidden">Use this for to search the site.</label> 
+    <input type="text" maxlength="128" name="search_block_form" class="searchbox-input" id="edit-search-block-form-1" size="15" value="" aria-label="Search Form" required title="Enter the terms you wish to search for." class="form-text exp-input" />          
+    <input type="submit" class="searchbox-submit btn btn-primary" />
+    <span class="searchbox-icon icon glyphicon glyphicon-search" aria-label="search" aria-hidden="true"></span>
+  </div>
+<div class="form-actions form-wrapper form-group" id="edit-actions"><button class="element-invisible btn btn-primary form-submit" type="submit" id="edit-submit" name="op" value="Search">Search</button>
+</div><input type="hidden" name="form_build_id" value="form-VBRKseLhD-s9Z3MaSbBASMn0u7DkKGbaIYnEg_zlRR8" />
+<input type="hidden" name="form_id" value="search_block_form" />
+
+</div></form>
+</section>
+  </div>
+        </div>
+          
+    </div>
+  </div>
+</div>
+
+<div class="nav_wrapper">
+  <div class="container">
+    <div class="row">
+      <div class="col-xs-12">
+        <div role="navigation" aria-label="primary"  id="primary-links" class="container-fluid">
+          <div class="navbar container navbar-default">
+                            <div class="navbar-collapse collapse navbar primary-links primary-links__navbar">
+                    <div class="region region-navigation">
+    <section aria-label="" id="block-menu-block-1" class="block block-menu-block clearfix">
+
+      
+  <div class="menu-block-wrapper menu-block-1 menu-name-main-menu parent-mlid-0 menu-level-1">
+  <ul class="menu nav"><li class="first expanded menu-mlid-7814"><a href="/2025-cesf">CESF 2025</a><ul class="menu nav"><li class="first leaf menu-mlid-7818"><a href="/cesf-2025/2025-cesf-messages-leadership">Messages from Leadership</a></li>
+<li class="leaf menu-mlid-7815"><a href="/cesf-2025/2025-featured-speakers" title="">Featured Speakers</a></li>
+<li class="leaf menu-mlid-7817"><a href="/cesf-2025/2025-cesf-plenary-and-workshops">Plenary and Workshops</a></li>
+<li class="leaf menu-mlid-7816"><a href="/cesf-2025/2025-cesf-event-sponsors">Event Sponsors</a></li>
+<li class="leaf menu-mlid-7821"><a href="/cesf-2025/2025-partnership-distinction-honorees">2025 Partnership of Distinction Honorees</a></li>
+<li class="leaf menu-mlid-7819"><a href="/cesf-2025/2025-soska-and-wilds-awardee">2025 Soska and Wilds Awardee</a></li>
+<li class="last leaf menu-mlid-7820"><a href="/cesf-2025/2025-cesf-collaboration-champion-awardees">2025 CESF Collaboration Champion Awardees</a></li>
+</ul></li>
+<li class="expanded menu-mlid-7593"><a href="/2024-cesf">Past Years</a><ul class="menu nav"><li class="first expanded menu-mlid-7795"><a href="/2024-cesf" title="">2024 CESF </a><ul class="menu nav"><li class="first leaf menu-mlid-7800"><a href="/cesf-2024/2024-partnerships-distinction-honorees">Partnerships of Distinction Honorees</a></li>
+<li class="leaf menu-mlid-7801"><a href="/cesf-2024/2024-soska-and-wilds-awardee">Soska and Wilds Awardee</a></li>
+<li class="last leaf menu-mlid-7802"><a href="/cesf-2024/2024-cesf-collaboration-champion-awardee">CESF Collaboration Champion Awardee</a></li>
+</ul></li>
+<li class="expanded menu-mlid-7627"><a href="/past-years/2023-cesf">2023 CESF</a><ul class="menu nav"><li class="first leaf menu-mlid-7630"><a href="/past-years/2023-cesf/2023-cesf-collaboration-champion-awardee">2023 CESF Collaboration Champion Awardee</a></li>
+<li class="leaf menu-mlid-7629"><a href="/past-years/2023-cesf/2023-soska-and-wilds-awardee">2023 Soska and Wilds Awardee</a></li>
+<li class="last leaf menu-mlid-7631"><a href="/cesf/2023-cesf/2023-partnerships-distinction-awardees">2023 Partnerships of Distinction Awardees</a></li>
+</ul></li>
+<li class="expanded menu-mlid-7619"><a href="/cesf/2022-cesf">2022 CESF</a><ul class="menu nav"><li class="first leaf menu-mlid-7622"><a href="/cesf/2022-cesf/2022-cesf-collaboration-champion-awardee">2022 CESF Collaboration Champion Awardee</a></li>
+<li class="leaf menu-mlid-7621"><a href="/past-years/2022-cesf/2022-soska-and-wilds-awardee">2022 Soska and Wilds Awardee</a></li>
+<li class="last leaf menu-mlid-7620"><a href="/cesf/2022-cesf/2022-partnerships-distinction-honorees" title="">2022 Partnerships of Distinction Honorees</a></li>
+</ul></li>
+<li class="expanded menu-mlid-7605"><a href="/past-years/2021-community-engaged-scholarship-forum">2021 CESF</a><ul class="menu nav"><li class="first leaf menu-mlid-7613"><a href="/2021-soska-wilds-award">2021 Soska and Wilds Awardee</a></li>
+<li class="leaf menu-mlid-7614"><a href="/2021-cesf-collaboration-champion">2021 CESF Collaboration Champion Awardee</a></li>
+<li class="last leaf menu-mlid-7615"><a href="/cesf/2021-cesf/2021-partnerships-distinction-honorees">2021 Partnerships of Distinction Honorees</a></li>
+</ul></li>
+<li class="expanded menu-mlid-7612"><a href="/past-years/2020-community-engaged-scholarship-forum">2020 CESF</a><ul class="menu nav"><li class="first leaf menu-mlid-7607"><a href="/cesf/2020-community-engaged-scholarship-forum/2020-tracy-soska-and-john-wilds-outreach-and">2020 Soska and Wilds Awardee</a></li>
+<li class="leaf menu-mlid-7609"><a href="/cesf/2020-community-engaged-scholarship-forum/2020-cesf-collaboration-champion-awardee">2020 CESF Collaboration Champion Awardee</a></li>
+<li class="last leaf menu-mlid-7606"><a href="/cesf/2020-community-engaged-scholarship-forum/2020-partnerships-distinction-honorees">2020 Partnerships of Distinction Honorees</a></li>
+</ul></li>
+<li class="last expanded menu-mlid-7597"><a href="/cesf/2019-community-engaged-scholarship-forum">2019 CESF</a><ul class="menu nav"><li class="first leaf menu-mlid-7610"><a href="/cesf/2019-cesf/2019-partnerships-distinction-honorees">2019 Partnerships of Distinction Honorees</a></li>
+<li class="last leaf menu-mlid-7602"><a href="/cesf/2019-cesf/academically-based-community-engagement">Academically Based Community Engagement</a></li>
+</ul></li>
+</ul></li>
+<li class="expanded menu-mlid-7595"><a href="/resources">Resources</a><ul class="menu nav"><li class="first leaf menu-mlid-7807"><a href="https://www.abce.pitt.edu/resources" title="">Community Engagement Resources</a></li>
+<li class="last collapsed menu-mlid-7598"><a href="/community-practice" title="">Community of Practice</a></li>
+</ul></li>
+<li class="last expanded menu-mlid-7806"><a href="/awards-and-recognition">Awards and Recognition</a><ul class="menu nav"><li class="first leaf menu-mlid-7813"><a href="/awards-and-recognition/cesf-2025-call-nominations-and-proposals">Call for Nominations and Proposals</a></li>
+<li class="leaf menu-mlid-7810"><a href="/awards-and-recognition/partnerships-distinction-honorees">Partnerships of Distinction Honorees</a></li>
+<li class="leaf menu-mlid-7811"><a href="/awards-and-recognition/soska-and-wilds-awardees">Soska and Wilds Awardees</a></li>
+<li class="last leaf menu-mlid-7812"><a href="/awards-and-recognition/cesf-collaboration-champion-awardees">CESF Collaboration Champion Awardees</a></li>
+</ul></li>
+</ul></div>
+
+</section>
+  </div>
+                </div>
+                      </div>
+        </div> <!-- /#primary-links -->
+      </div>
+    </div>        
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+</div>
+
+  <div role="banner" id="header" class="container-fluid">
+      <div class="row">  <div class="region region-header">
+    <section aria-label="" id="block-views-dcb1cf63e204cd5a62356d1248174c43" class="block block-views block__feature-image--centered-text clearfix">
+
+      
+  <div class="view view-feature-image-story view-id-feature_image_story view-display-id-centered_buttons view--feature-image--centered view-dom-id-2301a875c3d75957c455a39e3027ffe8">
+        
+  
+  
+      <div class="view-content">
+      <div  id="flexslider-1" class="flexslider optionset-feature-image">
+  <ul class="slides"><li>  
+  <div class="views-field views-field-field-image-centered-text feature-image feature__image">        <div class="field-content"><div class="owlcarousel-fields-205 disabled"><div class="item-0 item-odd"><img typeof="foaf:Image" class="img-responsive" src="https://www.abce.pitt.edu/sites/default/files/styles/1315x605/public/feature-image/2025cesfwebbannerv2-01.jpg?itok=AGzqPElM" width="2630" height="907" alt="" title="" /></div></div>
+<div class="feature-caption feature__caption">
+<div class="container  no-gutter">
+<div class="feature-info feature__info">
+<div class="feature-icon-wrapper">
+<div class="feature-icon">
+</div>
+</div>
+    <div class="feature-title center"><h2 class="feature__title">Community Engaged Scholarship Forum</h2></div>
+    <div class="feature-body feature__body"> 
+<a href="https://www.cesf.pitt.edu/2025" class="feature__button feature__button--blue">Recap CESF 2025</a></div>
+</div>
+</div>
+</div></div>  </div></li>
+</ul></div>
+    </div>
+  
+  
+  
+  
+  
+  
+</div>
+</section>
+<section aria-label="" id="block-nodesinblock-8" class="block block-nodesinblock clearfix">
+
+      
+  <div class="nodesinblock first odd" id="nodesinblock-291"><div class="centered-text-section">
+<div class="container">
+	<div class="col-xs-12 center">	
+		<article id="node-291" class="node node-centered-text-section node-promoted clearfix" about="/content/home-page-centered-text-top" typeof="sioc:Item foaf:Document">
+
+	 <div class="centered-text-section__sub-heading centered-text-section__sub-heading--before"><span class="centered-text-section__sub-heading-text">Reducing Barriers, Creating Opportunity</span></div><div class="centered-text-section__body"><h2><strong>#CESF25 took place Tuesday, March 4, 2025 in the William Pitt Union.</strong></h2>
+
+<p>Coalitions, organizations, and individuals with an interest in the intersections of campuses and communities were all invited to participate in this free event.</p>
+
+<p><strong><a href="https://www.cesf.pitt.edu/2025" target="_blank">Explore CESF 2025</a></strong></p>
+</div>
+	</article>
+		</div>
+</div>
+</div><div class="nodesinblock even" id="nodesinblock-314">
+
+<div class="feature_wrapper feature-text feature-text--large">
+  <div class="container">  
+    <div class="row">
+      <div class="col-xs-12">  
+        <article id="node-314" class="node node-feature-text-graphic node-promoted clearfix" about="/content/annual-forum" typeof="sioc:Item foaf:Document">
+          <div class="feature-text__image-wrapper">
+  <div class="field-feature-text-image">
+    <img typeof="foaf:Image" class="img-responsive" src="https://www.abce.pitt.edu/sites/default/files/feature-text/2025cesf_rectangle.png" width="970" height="645" alt="" />  </div>
+</div>
+          <div class="feature_text_caption feature-text__caption">
+              <header>
+                <h2 class="feature-text__heading">An Annual Forum</h2>
+              </header>
+            <div class="feature-text__body">
+  <div class="field-body">
+    <p>The University of Pittsburgh Community Engaged Scholarship Forum (CESF) elevates, celebrates, and reflects on collective approaches to community-engaged scholarship through the development of partnerships that achieve mutually beneficial, community-identified priorities.</p>
+  </div>
+</div>
+          </div>
+          </article>
+              </div>
+    </div>
+  </div>
+</div></div><div class="nodesinblock last odd" id="nodesinblock-296"><div class="centered-text-section">
+<div class="container">
+	<div class="col-xs-12 center">	
+		<article id="node-296" class="node node-centered-text-section node-promoted clearfix" about="/content/partnership-distinction-information" typeof="sioc:Item foaf:Document">
+
+	 <div class="centered-text-section__sub-heading centered-text-section__sub-heading--before"><span class="centered-text-section__sub-heading-text">Partnerships of Distinction</span></div><div class="centered-text-section__body"><p>The Partnerships of Distinction Award, conferred annually at the Community Engaged Scholarship Forum, recognizes outstanding partnerships that are exemplars of community engagement. Honorees demonstrate reciprocity, mutual benefit and significant community impact.&nbsp;</p>
+
+<p><a href="https://www.cesf.pitt.edu/awards-and-recognition">Explore all of the CESF honors and awards.</a></p>
+</div>
+	</article>
+		</div>
+</div>
+</div>
+</section>
+  </div>
+</div>
+  </div> <!-- /#header -->
+
+
+<a id="main-content"></a>
+
+
+    <div class="region region-main-mid">
+    <section aria-label="" id="block-nodesinblock-7" class="block block-nodesinblock clearfix">
+
+      
+  <div class="nodesinblock first odd" id="nodesinblock-277">
+
+<div class="feature_wrapper feature-text feature-text--large">
+  <div class="container">  
+    <div class="row">
+      <div class="col-xs-12">  
+        <article id="node-277" class="node node-feature-text-graphic node-promoted clearfix" about="/content/outreach-and-engagement-map" typeof="sioc:Item foaf:Document">
+          <div class="feature-text__image-wrapper">
+  <div class="field-feature-text-image">
+    <img typeof="foaf:Image" class="img-responsive" src="https://www.abce.pitt.edu/sites/default/files/feature-text/eom2024.jpg" width="970" height="645" alt="" />  </div>
+</div>
+          <div class="feature_text_caption feature-text__caption">
+              <header>
+                <h2 class="feature-text__heading">Outreach and Engagement Map</h2>
+              </header>
+            <div class="feature-text__body">
+  <div class="field-body">
+    <p>The University of Pittsburgh works in close collaboration with hundreds of community partners throughout Pittsburgh. We aspire to be a university that strengthens our communities - from the Pitt community, to our region and the world around us - by expanding engagement, supporting collaborations, and embracing a global perspective.</p>
+
+<p>Find Pitt in your community with the <a href="https://engagementmap.pitt.edu/">Engagement and Outreach Map</a>.</p>
+  </div>
+</div>
+          </div>
+          </article>
+              </div>
+    </div>
+  </div>
+</div></div><div class="nodesinblock last even" id="nodesinblock-276">
+	<article class="full_width_section node-276 node node-full-width-section node-promoted  clearfix" about="/content/bottom-links-images" typeof="sioc:Item foaf:Document">
+		            <a class="full_column full_width_section__column" href="http://cec.pitt.edu">
+          <div class="column_body full_width_section__column-body">
+            
+  <h3 class="field-trecol-block-lefttitle">
+    Neighborhood Commitments  </h3>
+            <span class="readmore">Pitt's Community Engagement Centers </span>
+          </div>
+          <div class="column_bg full_width_section__column-bg" style="background-image: url(/sites/default/files/block-img/feature_1.jpg)"></div>
+        </a>
+      			
+            <a class="full_column full_width_section__column" href="https://www.planforpitt.pitt.edu/">
+          <div class="column_body full_width_section__column-body">
+            
+  <h3 class="field-trecol-block-midtitle">
+    The Plan for Pitt  </h3>
+            <span class="readmore">Engagement is fundamental to community building at Pitt </span>
+          </div>
+          <div class="column_bg full_width_section__column-bg" style="background-image: url(/sites/default/files/block-img/feature_2.jpg)"></div>
+        </a>
+      			
+            <a class="full_column full_width_section__column" href="https://www.personaled.pitt.edu/community-engagement">
+          <div class="column_body full_width_section__column-body">
+            
+  <h3 class="field-trecol-block-righttitle">
+    Partnering for Progress  </h3>
+            <span class="readmore">Investments in Community Engagement </span>
+          </div>
+          <div class="column_bg full_width_section__column-bg" style="background-image: url(/sites/default/files/block-img/1521_ta_0002_1_2048px.jpg)"></div>
+        </a>
+      			
+
+	</article>
+
+
+
+</div>
+</section>
+  </div>
+
+    <div class="container-fluid main-bottom">
+        <div class="container">
+            <div class="row">
+                <section name="Main Bottom" class="col-sm-12">  <div class="region region-main-bottom">
+    <section aria-label="" id="block-views-77680d04baf0fe112348352ce8366894" class="block block-views news-events news-events--alt clearfix">
+
+      
+  <div class="view view-home-page-news-and-events view-id-home_page_news_and_events view-display-id-block_1 two-column view-dom-id-fda10a5f07fbcb1c641629653c1922db">
+        
+  
+  
+      <div class="view-content">
+        <div class="views-row views-row-1 views-row-odd views-row-first views-row-last">
+      
+  <div class="views-field views-field-php">        <span class="field-content"></span>  </div>  
+  <div class="views-field views-field-php-2">        <span class="field-content">    <h2 class="block-title">Events</h2>
+<script type="text/javascript" src="https://calendar.pitt.edu/widget/view?schools=pitt&amp;days=365&amp;num=4&amp;template=list-default"></script></span>  </div>  </div>
+    </div>
+  
+  
+  
+  
+  
+  
+</div>
+</section>
+  </div>
+</section>
+            </div>
+        </div>
+    </div>
+
+
+  <footer class="footer container-fluid">
+    <div class="container">
+      <div class="site_title">
+        <div class="footer-logo footer__logo">
+                                    <img src="/sites/all/themes/pitt_theme/img/pitt_logo_2019.png" width="261" alt="University of Pittsburgh logo" />
+                    </div>
+        <h3 class="footer-site_name footer__title">Community Engaged Scholarship Forum</h3>
+      </div>
+      
+                  <div class="region region-footer">
+    <section aria-label="" id="block-views-title-block-footer-title-block" class="block block-views block__address-block clearfix">
+
+      
+  <div class="view view-title-block view-id-title_block view-display-id-footer_title_block footer--title-block view-dom-id-af74b1bc8e22032a033a5a6e901eb906">
+        
+  
+  
+      <div class="view-content">
+        <div>
+      
+          
+  <div class="field-contact-info">
+    <p>University of Pittsburgh<br />
+4200 Fifth Avenue<br />
+Pittsburgh, PA 15260</p>
+
+<p>412-624-7709<br />
+<a href="mailto:cesf@pitt.edu">cesf@pitt.edu</a></p>
+
+<p> </p>
+  </div>
+    
+              </div>
+    </div>
+  
+  
+  
+  
+  
+  
+</div>
+</section>
+<section aria-label="" id="block-nodesinblock-1" class="block block-nodesinblock clearfix">
+
+      
+  <div class="nodesinblock first last odd" id="nodesinblock-207">
+
+	<article class="node-207 node node-block block-type-dark clearfix nodesinblock--default" about="/block/resources-footer-block" typeof="sioc:Item foaf:Document">
+        <div class="block-column">
+    		
+    		
+    		
+    			<section name="Resources Footer Block">
+    				<h4>Resources</h4>
+
+<ul class="two-column">
+	<li><a href="https://www.plan.pitt.edu">Plan for Pitt 2028</a></li>
+	<li><a href="https://www.community.pitt.edu">Office of Engagement and Community Affairs</a></li>
+</ul>
+
+              			</section>
+
+    		        </div>
+	</article>
+
+
+
+</div>
+</section>
+<section aria-label="" id="block-views-7991932e043137b92876af32e9d227ec" class="block block-views block__social-media clearfix">
+
+      
+  <div class="view view-social-media-icons view-id-social_media_icons view-display-id-footer_social_block social-block footer--social-block view-dom-id-0e7487ba43390196f1ab067c0a87782e">
+        
+  
+  
+      <div class="view-content">
+        <div class="views-row views-row-1 views-row-odd views-row-first">
+      
+  <div class="views-field views-field-nothing">        <span class="field-content"><a href="https://www.facebook.com/pitteca" target="_blank" title="Find Pitt ECA on Facebook"><span aria-label="Find Pitt ECA on Facebook" class="fab fa-facebook-f" aria-hidden="true"></span></a></span>  </div>  </div>
+  <div class="views-row views-row-2 views-row-even">
+      
+  <div class="views-field views-field-nothing">        <span class="field-content"><a href="https://instagram.com/pittcommunityengagement" target="_blank" title="Follow Pitt ECA on Instagram"><span aria-label="Follow Pitt ECA on Instagram" class="fab fa-instagram" aria-hidden="true"></span></a></span>  </div>  </div>
+  <div class="views-row views-row-3 views-row-odd views-row-last">
+      
+  <div class="views-field views-field-nothing">        <span class="field-content"><a href="https://www.youtube.com/@PittECA" target="_blank" title="Follow Pitt ECA on YouTube"><span aria-label="Follow Pitt ECA on YouTube" class="fab fa-youtube" aria-hidden="true"></span></a></span>  </div>  </div>
+    </div>
+  
+  
+  
+  
+  
+  
+</div>
+</section>
+  </div>
+      
+      <div class="col-sm-4 col-md-3 col-lg-4 footer__column1">      
+            </div>
+      <div class="col-sm-8 col-md-5 col-lg-4 footer__column2">
+                  </div>
+      <div class="col-sm-12 col-md-4 footer__column3">
+                  </div>
+
+          <div id="copyright" class="container-fluid footer__copyright">
+          <div class="region region-copyright">
+    <section aria-label="" id="block-block-1" class="block block-block clearfix">
+
+      
+  
+<span>Revised 03/05/25</span><span>Copyright 2025</span><a href="/node/253">Send feedback about this site.</a>
+</section>
+  </div>
+      </div>
+      </div>
+
+</footer>
+  <script src="/sites/all/libraries/owl-carousel/owl.carousel.min.js?sdwoqw"></script>
+<script src="/sites/all/modules/owlcarousel/includes/js/owlcarousel.settings.js?sdwoqw"></script>
+<script src="/sites/all/modules/flexslider/assets/js/flexslider.load.js?sdwoqw"></script>
+<script src="/sites/all/themes/bootstrap/js/bootstrap.js?sdwoqw"></script>
+</body>
+</html>
