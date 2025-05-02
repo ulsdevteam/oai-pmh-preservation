@@ -1,4 +1,5 @@
 base_url=http://d-scholarship.pitt.edu/cgi/oai2
 metadata_format=oai_dc
 xpath=//dc:identifier[starts-with(text(), 'http')]
-storage_directory=C:\Users\agkau\Documents\Github\oai-pmh-preservation\oaipmh-storage
+storage_directory=oaipmh-storage
+

@@ -4,7 +4,8 @@ import requests
 from datetime import datetime, date
 from oaipmh_scythe import Scythe
 import certifi
-from lxml import etree as ET  # For proper namespace and XPath handling
+#import truststore
+#truststore.inject_into_ssl()
 
 # Configure SSL verification
 USE_SSL_VERIFICATION = True  # Set to False to bypass SSL verification (not recommended)
@@ -21,9 +22,13 @@ def main():
     metadata_format = config["metadata_format"]
     last_run_date, today = readStateFile()
 
-    # Create storage directory if it doesn't exist
-    if not os.path.exists(config["storage_directory"]):
-        os.makedirs(config["storage_directory"])
+    # Resolve relative path to absolute path
+    storage_dir = os.path.abspath(config["storage_directory"])
+    config["storage_directory"] = storage_dir  # Update config with resolved path
+
+    if not os.path.exists(storage_dir):
+        os.makedirs(storage_dir)
+
 
     try:
         runScythe(base_url, metadata_format, last_run_date, today, config)
@@ -62,29 +67,27 @@ def updateStateFile(new_date):
     print(f"Updated state file with {new_date}")
 
 
-def extract_file_uris(metadata, xpath_expr):
-    # Parse the XML content from the metadata string
-    root = ET.fromstring(metadata.encode("utf-8"))
+def extract_file_uris(metadata_dict, xpath_expr=None):
+    file_uris = []
 
-    # Define namespaces used in the XML
-    namespaces = {
-        'oai': 'http://www.openarchives.org/OAI/2.0/',
-        'oai_dc': 'http://www.openarchives.org/OAI/2.0/oai_dc/',
-        'dc': 'http://purl.org/dc/elements/1.1/'
-    }
-
-    # Evaluate XPath and filter for HTTP links
-    file_uri_elements = root.xpath(xpath_expr, namespaces=namespaces)
-    file_uris = [element.strip() for element in file_uri_elements if element.strip().startswith('http')]
+    # Search for values in the dict that look like URLs
+    for key, value in metadata_dict.items():
+        if isinstance(value, list):
+            for item in value:
+                if isinstance(item, str) and item.startswith("http"):
+                    file_uris.append(item)
+        elif isinstance(value, str) and value.startswith("http"):
+            file_uris.append(value)
 
     return file_uris
 
 
 def process_records(records, config):
     for record in records:
-        identifier = record.identifier
-        storage_path = os.path.join(config['storage_directory'], identifier)
+        header = record.header
+        identifier = header.identifier
 
+        storage_path = os.path.join(config['storage_directory'], identifier.replace(":", "_"))
         if os.path.exists(storage_path):
             try:
                 os.rmdir(storage_path)
@@ -93,23 +96,23 @@ def process_records(records, config):
 
         os.makedirs(storage_path, exist_ok=True)
 
-        metadata_formats = record.get_metadata_formats()
-        for metadata_format in metadata_formats:
-            metadata = record.get_metadata(metadata_format)
-            metadata_file_path = os.path.join(storage_path, f"{identifier}.{metadata_format}")
+        metadata = record.metadata  # dict
+        if metadata:
+            metadata_file_path = os.path.join(storage_path, f"{identifier.replace(':', '_')}.{config['metadata_format']}")
 
             with open(metadata_file_path, 'w', encoding='utf-8') as file:
-                file.write(metadata)
+                file.write(str(metadata))  # Save as string for now
 
-            if metadata_format == config['metadata_format']:
-                file_uris = extract_file_uris(metadata, config['xpath'])
-                for file_uri in file_uris:
-                    fetch_and_store_file(file_uri, storage_path, identifier)
+            # Extract and download files
+            file_uris = extract_file_uris(metadata, config.get('xpath'))
+            for file_uri in file_uris:
+                fetch_and_store_file(file_uri, storage_path, identifier)
 
 
 def fetch_and_store_file(file_uri, storage_path, identifier):
     try:
-        response = requests.get(file_uri)
+        file_uri = file_uri.replace("https:", "http:")
+        response = requests.get(file_uri, verify=certifi.where())  # <-- Use certifi directly here
         response.raise_for_status()
         file_name = os.path.basename(file_uri)
         file_path = os.path.join(storage_path, 'files', file_name)
