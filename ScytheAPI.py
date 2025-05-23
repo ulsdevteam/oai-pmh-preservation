@@ -4,8 +4,8 @@ import requests
 from datetime import datetime, date
 from oaipmh_scythe import Scythe
 import certifi
-#import truststore
-#truststore.inject_into_ssl()
+import truststore
+truststore.inject_into_ssl()
 
 # Configure SSL verification
 USE_SSL_VERIFICATION = True  # Set to False to bypass SSL verification (not recommended)
@@ -111,7 +111,7 @@ def process_records(records, config):
 
 def fetch_and_store_file(file_uri, storage_path, identifier):
     try:
-        file_uri = file_uri.replace("https:", "http:")
+        #file_uri = file_uri.replace("https:", "http:")
         response = requests.get(file_uri, verify=certifi.where())  # <-- Use certifi directly here
         response.raise_for_status()
         file_name = os.path.basename(file_uri)
