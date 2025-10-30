@@ -3,6 +3,7 @@ import httpx
 import requests
 from datetime import datetime, date
 from oaipmh_scythe import Scythe
+import ssl
 import certifi
 import truststore
 truststore.inject_into_ssl()
@@ -11,10 +12,12 @@ truststore.inject_into_ssl()
 USE_SSL_VERIFICATION = True  # Set to False to bypass SSL verification (not recommended)
 
 # Ensure the system uses certifi's certificates
+"""
 if USE_SSL_VERIFICATION:
     os.environ["SSL_CERT_FILE"] = certifi.where()
     os.environ["SSL_CERT_DIR"] = os.path.dirname(certifi.where())
 
+"""
 
 def main():
     config = readConfigFile()
@@ -106,13 +109,14 @@ def process_records(records, config):
             # Extract and download files
             file_uris = extract_file_uris(metadata, config.get('xpath'))
             for file_uri in file_uris:
+                #input("Getting "+ file_uri)
                 fetch_and_store_file(file_uri, storage_path, identifier)
 
 
 def fetch_and_store_file(file_uri, storage_path, identifier):
     try:
         #file_uri = file_uri.replace("https:", "http:")
-        response = requests.get(file_uri, verify=certifi.where())  # <-- Use certifi directly here
+        response = requests.get(file_uri)  # <-- Use certifi directly here
         response.raise_for_status()
         file_name = os.path.basename(file_uri)
         file_path = os.path.join(storage_path, 'files', file_name)
@@ -128,13 +132,20 @@ def fetch_and_store_file(file_uri, storage_path, identifier):
 
 def runScythe(endpoint, metadata_format, last_run_date, today, config):
     print(f"Querying endpoint: {endpoint} with format: {metadata_format} from {last_run_date} to {today}")
+    auth = httpx.BasicAuth(username="pals", password="pals")
     try:
-        with Scythe(endpoint) as scythe:
+        with Scythe(endpoint, auth=auth) as scythe:
+            #print(dir(scythe),
+            #    scythe.client.get(
+            #        "https://pittir.hykucommons.org/catalog/oai?verb=Identify"
+            #    ).headers)
+            #exit()
             records = scythe.list_records(
                 metadata_prefix=metadata_format,
                 from_=last_run_date.strftime("%Y-%m-%d"),
                 until=today.strftime("%Y-%m-%d")
             )
+            print("Got records!")
             tempNumRecords = 0
             process_records(records, config)
             for index, record in enumerate(records):
@@ -144,6 +155,7 @@ def runScythe(endpoint, metadata_format, last_run_date, today, config):
                     break  # Stop after 100 records for testing
     except Exception as e:
         print(f"No records found or error occurred: {e}")
+        
 
 
 if __name__ == "__main__":
