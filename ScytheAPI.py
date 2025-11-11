@@ -5,7 +5,11 @@ from datetime import datetime, date
 from oaipmh_scythe import Scythe
 import ssl
 import certifi
+import lxml
+from lxml import etree
+import shutil
 import truststore
+import pathlib
 truststore.inject_into_ssl()
 
 # Configure SSL verification
@@ -65,6 +69,8 @@ def readStateFile():
 
 
 def updateStateFile(new_date):
+    print("Not Updating state file for debug!")
+    return
     with open("state.txt", "w") as stateFile:
         stateFile.write(new_date.strftime("%Y-%m-%d"))
     print(f"Updated state file with {new_date}")
@@ -84,33 +90,75 @@ def extract_file_uris(metadata_dict, xpath_expr=None):
 
     return file_uris
 
+def setup_dir_for_update(storage_path):
+    """
+    A record is stored in a folder corresponding to it's id.
+    When a record is being processed, the corresponding folder may be in one 
+    of these states:
 
-def process_records(records, config):
+    1. folder does not exist
+    2. folder exists, but contains out of date information
+    3. folder exists, but is in a partially updated state 
+    
+    Distinguishibg between case 2 and case 3 is necessary as updates to the 
+    folder are done out of order (by metadata format instead of per record).
+    
+    Case 2 and Case 3 are distinguished via presence of a trunc file called 
+    .updated
+    """
+    placeholder_path = os.path.join(storage_path, ".update")
+    if not os.path.exists(storage_path):
+        os.makedirs(storage_path)
+        open(placeholder_path, 'w').close() # create a trunc file
+        return
+    if not os.path.exists(placeholder_path):
+        shutil.rmtree(storage_path)
+        os.makedirs(storage_path)
+        open(placeholder_path, 'w').close()
+    
+def dir_cleanup(main_dir):
+    for dir in os.listdir(main_dir):
+        placeholder_path = os.path.join(main_dir, dir, ".update")
+        if os.path.exists(placeholder_path):
+            os.remove(placeholder_path)
+
+def process_records(records, config, format, save_files = False):
     for record in records:
         header = record.header
         identifier = header.identifier
 
         storage_path = os.path.join(config['storage_directory'], identifier.replace(":", "_"))
+        setup_dir_for_update(storage_path)
+        """
         if os.path.exists(storage_path):
             try:
                 os.rmdir(storage_path)
+                py_path = os.path.realpath(__file__)
+                working_dir = pathlib.Path(py_path).parent
+                if (working_dir not in
+                    pathlib.Path(os.path.realpath(storage_path)).parents):
+                    print("Error: storage_directory ")
+                    raise Exception("Error:")
+                #shutil.rmtree(storage_path)
             except OSError:
                 pass  # Skip if directory isn't empty or removable
 
         os.makedirs(storage_path, exist_ok=True)
-
+        """
         metadata = record.metadata  # dict
         if metadata:
-            metadata_file_path = os.path.join(storage_path, f"{identifier.replace(':', '_')}.{config['metadata_format']}")
+            metadata_file_path = os.path.join(storage_path,
+                f"{identifier.replace(':', '_')}.{format}")
 
             with open(metadata_file_path, 'w', encoding='utf-8') as file:
                 file.write(str(metadata))  # Save as string for now
-
-            # Extract and download files
-            file_uris = extract_file_uris(metadata, config.get('xpath'))
-            for file_uri in file_uris:
-                #input("Getting "+ file_uri)
-                fetch_and_store_file(file_uri, storage_path, identifier)
+            
+            if save_files:
+                # Extract and download files
+                file_uris = extract_file_uris(metadata, config.get('xpath'))
+                for file_uri in file_uris:
+                    #input("Getting "+ file_uri)
+                    fetch_and_store_file(file_uri, storage_path, identifier)
 
 
 def fetch_and_store_file(file_uri, storage_path, identifier):
@@ -140,19 +188,19 @@ def runScythe(endpoint, metadata_format, last_run_date, today, config):
             #        "https://pittir.hykucommons.org/catalog/oai?verb=Identify"
             #    ).headers)
             #exit()
-            records = scythe.list_records(
-                metadata_prefix=metadata_format,
-                from_=last_run_date.strftime("%Y-%m-%d"),
-                until=today.strftime("%Y-%m-%d")
-            )
-            print("Got records!")
-            tempNumRecords = 0
-            process_records(records, config)
-            for index, record in enumerate(records):
-                print(record)
-                tempNumRecords += 1
-                if tempNumRecords == 100:
-                    break  # Stop after 100 records for testing
+            
+            metadata_formats = scythe.list_metadata_formats()
+            for meta_format in metadata_formats:
+                print(f"{meta_format.metadataPrefix}")
+                format_prefix = meta_format.metadataPrefix
+                records = scythe.list_records(
+                    metadata_prefix=format_prefix,
+                    from_=last_run_date.strftime("%Y-%m-%d"),
+                    until=today.strftime("%Y-%m-%d")
+                )
+                print("Got records!")
+                process_records(records, config, format_prefix, format_prefix == metadata_format)
+        dir_cleanup(config["storage_directory"])
     except Exception as e:
         print(f"No records found or error occurred: {e}")
         
