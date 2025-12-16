@@ -10,8 +10,17 @@ from lxml import etree
 import shutil
 import truststore
 import pathlib
+import auth     # local import 
+
+from urllib.parse import urlparse
 truststore.inject_into_ssl()
 
+def is_valid_url(url):
+    try:
+        res = urlparse(url)
+        return all([res.scheme, res.netloc])
+    except:
+        return False
 # Configure SSL verification
 USE_SSL_VERIFICATION = True  # Set to False to bypass SSL verification (not recommended)
 
@@ -75,21 +84,24 @@ def updateStateFile(new_date):
         stateFile.write(new_date.strftime("%Y-%m-%d"))
     print(f"Updated state file with {new_date}")
 
+def extract_file_uris(record_xml, xpath_expr, ns_dict):
+    tree = etree.XML(str(record_xml))
+    return list(filter(is_valid_url, tree.xpath(xpath_expr, namespaces=ns_dict)))  
 
-def extract_file_uris(metadata_dict, xpath_expr=None):
-    file_uris = []
+#def extract_file_uris(metadata_dict, xpath_expr=None):
+#    file_uris = []
+#    print(metadata_dict.items())
 
     # Search for values in the dict that look like URLs
-    for key, value in metadata_dict.items():
-        if isinstance(value, list):
-            for item in value:
-                if isinstance(item, str) and item.startswith("http"):
-                    file_uris.append(item)
-        elif isinstance(value, str) and value.startswith("http"):
-            file_uris.append(value)
-
-    return file_uris
-
+#    for key, value in metadata_dict.items():
+#        if isinstance(value, list):
+#            for item in value:
+#                if isinstance(item, str) and item.startswith("http"):
+#                    file_uris.append(item)
+#        elif isinstance(value, str) and value.startswith("http"):
+#            file_uris.append(value)
+#
+#    return file_uris
 def setup_dir_for_update(storage_path):
     """
     A record is stored in a folder corresponding to it's id.
@@ -123,7 +135,7 @@ def dir_cleanup(main_dir):
             os.remove(placeholder_path)
 
 def process_records(records, config, format, save_files = False):
-    for record in records:
+    for record, _ in zip(records, range(10)):
         header = record.header
         identifier = header.identifier
 
@@ -146,16 +158,20 @@ def process_records(records, config, format, save_files = False):
         os.makedirs(storage_path, exist_ok=True)
         """
         metadata = record.metadata  # dict
+        #print(etree.tostring(etree.XML(str(record)),
+        #    pretty_print=True).decode("utf-8"))
         if metadata:
             metadata_file_path = os.path.join(storage_path,
                 f"{identifier.replace(':', '_')}.{format}")
 
             with open(metadata_file_path, 'w', encoding='utf-8') as file:
-                file.write(str(metadata))  # Save as string for now
+                file.write(str(record))  # Save as string for now
             
             if save_files:
                 # Extract and download files
-                file_uris = extract_file_uris(metadata, config.get('xpath'))
+                file_uris = extract_file_uris(record, "//dc:identifier/text()", 
+                    {'dc': "http://purl.org/dc/elements/1.1/"})
+                print(file_uris)
                 for file_uri in file_uris:
                     #input("Getting "+ file_uri)
                     fetch_and_store_file(file_uri, storage_path, identifier)
@@ -183,11 +199,11 @@ def runScythe(endpoint, metadata_format, last_run_date, today, config):
     auth = httpx.BasicAuth(username="pals", password="pals")
     try:
         with Scythe(endpoint, auth=auth) as scythe:
-            #print(dir(scythe),
+            #print(
             #    scythe.client.get(
             #        "https://pittir.hykucommons.org/catalog/oai?verb=Identify"
             #    ).headers)
-            #exit()
+            #print(scythe.identify())
             
             metadata_formats = scythe.list_metadata_formats()
             for meta_format in metadata_formats:
