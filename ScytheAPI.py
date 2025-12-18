@@ -179,7 +179,7 @@ def process_records(records, config, format, save_files = False):
                     file_data = fetch_file(file_uri)
                     filename = os.path.basename(file_uri) 
                     generated_opex = generate_opex_file(file_data, str(record),
-                        filename, f"identifier_{i}") 
+                        filename, f"{identifier}_{i}") 
                     
                     store_full_path = os.path.join(storage_path, "files",
                         filename)
