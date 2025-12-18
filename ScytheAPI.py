@@ -7,9 +7,11 @@ import ssl
 import certifi
 import lxml
 from lxml import etree
+from lxml.builder import ElementMaker
 import shutil
 import truststore
 import pathlib
+import hashlib
 import auth     # local import 
 
 from urllib.parse import urlparse
@@ -174,8 +176,73 @@ def process_records(records, config, format, save_files = False):
                 print(file_uris)
                 for file_uri in file_uris:
                     #input("Getting "+ file_uri)
-                    fetch_and_store_file(file_uri, storage_path, identifier)
+                    file_data = fetch_file(file_uri)
+                    filename = os.path.basename(file_uri) 
+                    generated_opex = generate_opex_file(file_data, str(record),
+                        filename) 
+                    
+                    store_full_path = os.path.join(storage_path, "files",
+                        filename)
+                    store_file(file_data, store_full_path)
+                    store_file(etree.tostring(generated_opex, encoding="UTF-8", 
+                        standalone=True, pretty_print=True), store_full_path + ".opex")
+                    #fetch_and_store_file(file_uri, storage_path, identifier)
 
+
+def fetch_file(file_uri):
+    try:
+        response = requests.get(file_uri)
+        response.raise_for_status()
+        return response.content
+    except Exception as e:
+        print(f"Failed to download {file_uri}: {e}")
+
+
+opex_generated_count = 0 # used for sourceID temporarily
+def generate_opex_file(file_data, metadata, filename):
+    global opex_generated_count
+    # currently specialized for oai_dc 
+    opex_ns_url = "http://www.openpreservationexchange.org/opex/v1.2"
+    oai_ns_url = "http://www.openarchives.org/OAI/2.0/"
+    dc_ns_url = "http://purl.org/dc/elements/1.1/"
+    
+    nsmap = {'opex': opex_ns_url, 'oai':oai_ns_url, 'dc':dc_ns_url}
+    metadata_etree = etree.XML(metadata)
+    title = metadata_etree.xpath("//dc:title/text()", namespaces=nsmap)[0]  
+    description = metadata_etree.xpath("//dc:description/text()",
+            namespaces=nsmap)[0]  
+    identifiers = metadata_etree.xpath("//dc:identifiers/text()",
+        namespaces=nsmap)
+    
+    
+    E = ElementMaker(namespace=opex_ns_url, 
+        nsmap={'opex': opex_ns_url})
+    
+    identifier_opex_element = E.Identifiers(*[E.Identifier(x) for x in
+        identifiers])
+    fixities = E.Fixities(
+        E.Fixity(hashlib.sha256(file_data).hexdigest(), {'type': 'SHA-256'}),
+        )
+    
+    
+    root = E.OPEXMetadata(
+        E.Properties(
+            E.Title(title), E.Decription(description), identifier_opex_element 
+        ),
+        E.Transfer(
+            E.SourceID(str(opex_generated_count)),
+            fixities,
+            filename
+        )
+    )    
+    opex_generated_count += 1
+    return root
+    
+
+def store_file(file_data, file_path):
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    with open(file_path, 'wb') as f:
+        f.write(file_data)
 
 def fetch_and_store_file(file_uri, storage_path, identifier):
     try:
