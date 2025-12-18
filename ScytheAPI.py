@@ -174,12 +174,12 @@ def process_records(records, config, format, save_files = False):
                 file_uris = extract_file_uris(record, "//dc:identifier/text()", 
                     {'dc': "http://purl.org/dc/elements/1.1/"})
                 print(file_uris)
-                for file_uri in file_uris:
+                for i, file_uri in enumerate(file_uris):
                     #input("Getting "+ file_uri)
                     file_data = fetch_file(file_uri)
                     filename = os.path.basename(file_uri) 
                     generated_opex = generate_opex_file(file_data, str(record),
-                        filename) 
+                        filename, f"identifier_{i}") 
                     
                     store_full_path = os.path.join(storage_path, "files",
                         filename)
@@ -199,7 +199,7 @@ def fetch_file(file_uri):
 
 
 opex_generated_count = 0 # used for sourceID temporarily
-def generate_opex_file(file_data, metadata, filename):
+def generate_opex_file(file_data, metadata, filename, identifier):
     global opex_generated_count
     # currently specialized for oai_dc 
     opex_ns_url = "http://www.openpreservationexchange.org/opex/v1.2"
@@ -230,12 +230,11 @@ def generate_opex_file(file_data, metadata, filename):
             E.Title(title), E.Decription(description), identifier_opex_element 
         ),
         E.Transfer(
-            E.SourceID(str(opex_generated_count)),
+            E.SourceID(identifier),
             fixities,
             filename
         )
     )    
-    opex_generated_count += 1
     return root
     
 
