@@ -130,11 +130,16 @@ def setup_dir_for_update(storage_path):
         os.makedirs(storage_path)
         open(placeholder_path, 'w').close()
     
-def dir_cleanup(main_dir):
+def dir_postaction(main_dir):
     for dir in os.listdir(main_dir):
         placeholder_path = os.path.join(main_dir, dir, ".update")
         if os.path.exists(placeholder_path):
+            create_folder_opex(os.path.join(main_dir, dir))
             os.remove(placeholder_path)
+
+def create_folder_opex(dir_path):
+     
+    pass 
 
 def process_records(records, config, format, save_files = False):
     for record, _ in zip(records, range(10)):
@@ -282,7 +287,7 @@ def runScythe(endpoint, metadata_format, last_run_date, today, config):
                 )
                 print("Got records!")
                 process_records(records, config, format_prefix, format_prefix == metadata_format)
-        dir_cleanup(config["storage_directory"])
+        dir_postaction(config["storage_directory"])
     except Exception as e:
         print(f"No records found or error occurred: {e}")
         
