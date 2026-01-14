@@ -267,7 +267,9 @@ def fetch_and_store_file(file_uri, storage_path, identifier):
 
 def runScythe(endpoint, metadata_format, last_run_date, today, config):
     print(f"Querying endpoint: {endpoint} with format: {metadata_format} from {last_run_date} to {today}")
-    auth = httpx.BasicAuth(username="pals", password="pals")
+    username = config["username"]
+    passwd = config["password"]
+    auth = httpx.BasicAuth(username=username, password=password)
     try:
         with Scythe(endpoint, auth=auth) as scythe:
             #print(

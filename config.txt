@@ -1,7 +1,0 @@
-base_url_=https://pittir.hykucommons.org/catalog/oai
-base_url_1=https://swordtest.palni-palci-knapsack-friends.notch8.cloud/catalog/oai
-base_url=https://d-scholarship.pitt.edu/cgi/oai2
-metadata_format=oai_dc
-xpath=//dc:identifier[starts-with(text(), 'http')]
-storage_directory=oaipmh-storage
-

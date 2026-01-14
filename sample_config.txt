@@ -1,0 +1,7 @@
+base_url_=https://<oai_tenant>/catalog/oai
+metadata_format=oai_dc
+xpath=//dc:identifier[starts-with(text(), 'http')]
+storage_directory=oaipmh-storage
+username=xxxx
+password=xxxx
+
