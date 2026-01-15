@@ -1,4 +1,5 @@
 import os
+import sys
 import httpx
 import requests
 from datetime import datetime, date
@@ -10,12 +11,20 @@ from lxml import etree
 from lxml.builder import ElementMaker
 import shutil
 import truststore
-import pathlib
 import hashlib
 import auth     # local import 
 
 from urllib.parse import urlparse
 truststore.inject_into_ssl()
+
+TOML_IMPORTED_FLAG = True
+try:
+    import tomllib
+except ImportError:
+    try:
+        import tomlli as tomllib
+    except:
+        TOML_IMPORTED_FLAG = False
 
 def is_valid_url(url):
     try:
@@ -56,6 +65,9 @@ def main():
 
 
 def readConfigFile():
+    if TOML_IMPORTED_FLAG:
+        with open("config.txt", "r") as configFile:
+            return tomllib.load(configFile)
     config = {}
     with open("config.txt", "r") as configFile:
         for line in configFile:
@@ -63,7 +75,7 @@ def readConfigFile():
             if not line or "=" not in line:
                 continue
             key, value = line.split("=", 1)
-            config[key.strip()] = value.strip()
+            config[key.strip('\"')] = value.strip()
     return config
 
 
@@ -203,9 +215,7 @@ def fetch_file(file_uri):
         print(f"Failed to download {file_uri}: {e}")
 
 
-opex_generated_count = 0 # used for sourceID temporarily
 def generate_opex_file(file_data, metadata, filename, identifier):
-    global opex_generated_count
     # currently specialized for oai_dc 
     opex_ns_url = "http://www.openpreservationexchange.org/opex/v1.2"
     oai_ns_url = "http://www.openarchives.org/OAI/2.0/"
