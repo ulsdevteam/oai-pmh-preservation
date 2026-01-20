@@ -12,6 +12,7 @@ from lxml.builder import ElementMaker
 import shutil
 import truststore
 import hashlib
+from zipfile import ZipFile
 import auth     # local import 
 
 from urllib.parse import urlparse
@@ -27,6 +28,7 @@ except ImportError:
         TOML_IMPORTED_FLAG = False
 
 def is_valid_url(url):
+    print(url)
     try:
         res = urlparse(url)
         return all([res.scheme, res.netloc])
@@ -66,7 +68,7 @@ def main():
 
 def readConfigFile():
     if TOML_IMPORTED_FLAG:
-        with open("config.txt", "r") as configFile:
+        with open("config.txt", "rb") as configFile:
             return tomllib.load(configFile)
     config = {}
     with open("config.txt", "r") as configFile:
@@ -90,6 +92,18 @@ def readStateFile():
     today = date.today()
     return last_run_date, today
 
+def create_pax(dir_path):
+    identifier = os.path.split(dir_path)[-1]
+    files_path = os.path.join(dir_path, "files")
+    files_list = os.listdir(files_path)
+    pax_path = os.path.join(dir_path, identifier)
+    xip_path = create_xip(dir_path)
+    with ZipFile(pax_path + ".pax.zip", 'w') as zf:
+        for file_name in files_list:
+            zf.write(os.path.join(files_path, file_name), arcname=file_name)
+        zf.write(xip_path)
+        
+    
 
 def updateStateFile(new_date):
     print("Not Updating state file for debug!")
@@ -146,15 +160,32 @@ def dir_postaction(main_dir):
     for dir in os.listdir(main_dir):
         placeholder_path = os.path.join(main_dir, dir, ".update")
         if os.path.exists(placeholder_path):
-            create_folder_opex(os.path.join(main_dir, dir))
+            #create_folder_opex(os.path.join(main_dir, dir))
+            #create_pax(os.path.join(main_dir, dir))
             os.remove(placeholder_path)
 
 def create_folder_opex(dir_path):
+    opex_ns_url = "http://www.openpreservationexchange.org/opex/v1.2"
+    oai_ns_url = "http://www.openarchives.org/OAI/2.0/"
+    dc_ns_url = "http://purl.org/dc/elements/1.1/"
+
+    nsmap = {'opex': opex_ns_url, 'oai':oai_ns_url, 'dc':dc_ns_url}
+    metadata_etree = etree.XML(metadata)
+    title = metadata_etree.xpath("//dc:title/text()", namespaces=nsmap)[0]  
+    description = metadata_etree.xpath("//dc:description/text()",
+            namespaces=nsmap)[0]  
+    identifiers = metadata_etree.xpath("//dc:identifiers/text()",
+        namespaces=nsmap)
+
+
+    E = ElementMaker(namespace=opex_ns_url, 
+        nsmap={'opex': opex_ns_url})
      
     pass 
 
+
 def process_records(records, config, format, save_files = False):
-    for record, _ in zip(records, range(10)):
+    for record, _ in zip(records, range(config["limit_entries"])):
         header = record.header
         identifier = header.identifier
 
@@ -188,14 +219,15 @@ def process_records(records, config, format, save_files = False):
             
             if save_files:
                 # Extract and download files
-                file_uris = extract_file_uris(record, "//dc:identifier/text()", 
-                    {'dc': "http://purl.org/dc/elements/1.1/"})
+                file_uris = extract_file_uris(record, config["xpath"], 
+                    {'dc': "http://purl.org/dc/elements/1.1/",
+                    'oai':'http://www.openarchives.org/OAI/2.0/'})
                 print(file_uris)
                 for i, file_uri in enumerate(file_uris):
                     #input("Getting "+ file_uri)
                     file_data = fetch_file(file_uri)
                     filename = os.path.basename(file_uri) 
-                    generated_opex = generate_opex_file(file_data, str(record),
+                    generated_opex = create_opex_file(file_data, str(record),
                         filename, f"{identifier}_{i}") 
                     
                     store_full_path = os.path.join(storage_path, "files",
@@ -215,7 +247,7 @@ def fetch_file(file_uri):
         print(f"Failed to download {file_uri}: {e}")
 
 
-def generate_opex_file(file_data, metadata, filename, identifier):
+def create_opex_file(file_data, metadata, filename, identifier):
     # currently specialized for oai_dc 
     opex_ns_url = "http://www.openpreservationexchange.org/opex/v1.2"
     oai_ns_url = "http://www.openarchives.org/OAI/2.0/"
@@ -252,6 +284,11 @@ def generate_opex_file(file_data, metadata, filename, identifier):
     )    
     return root
     
+def create_xip(dir_path):
+    xip_ns_url = "http://preservica.com/XIP/v6.0"
+    nsmap = {"xip":xip_ns_url}
+    
+    pass
 
 def store_file(file_data, file_path):
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
@@ -277,26 +314,29 @@ def fetch_and_store_file(file_uri, storage_path, identifier):
 
 def runScythe(endpoint, metadata_format, last_run_date, today, config):
     print(f"Querying endpoint: {endpoint} with format: {metadata_format} from {last_run_date} to {today}")
+    print(config)
     username = config["username"]
     passwd = config["password"]
-    auth = httpx.BasicAuth(username=username, password=password)
+    auth = httpx.BasicAuth(username=username, password=passwd)
     try:
         with Scythe(endpoint, auth=auth) as scythe:
-            #print(
-            #    scythe.client.get(
-            #        "https://pittir.hykucommons.org/catalog/oai?verb=Identify"
-            #    ).headers)
-            #print(scythe.identify())
-            
+            print("Starting Scythe")
+            print(
+                scythe.client.get(
+                    "https://pittir.hykucommons.org/catalog/oai?verb=Identify"
+                ).headers)
+            print(scythe.identify())
+            print("got identify")
             metadata_formats = scythe.list_metadata_formats()
             for meta_format in metadata_formats:
                 print(f"{meta_format.metadataPrefix}")
                 format_prefix = meta_format.metadataPrefix
-                records = scythe.list_records(
-                    metadata_prefix=format_prefix,
-                    from_=last_run_date.strftime("%Y-%m-%d"),
-                    until=today.strftime("%Y-%m-%d")
-                )
+                #records = scythe.list_records(
+                #    metadata_prefix=format_prefix,
+                #    from_=last_run_date.strftime("%Y-%m-%d"),
+                #    until=today.strftime("%Y-%m-%d")
+                #)
+                records = scythe.list_records(metadata_prefix = format_prefix)
                 print("Got records!")
                 process_records(records, config, format_prefix, format_prefix == metadata_format)
         dir_postaction(config["storage_directory"])
