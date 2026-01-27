@@ -1,3 +1,4 @@
+import traceback
 import os
 import sys
 import httpx
@@ -77,7 +78,7 @@ def readConfigFile():
             if not line or "=" not in line:
                 continue
             key, value = line.split("=", 1)
-            config[key.strip('\"')] = value.strip()
+            config[key.strip('\"')] = value.strip("\"")
     return config
 
 
@@ -160,28 +161,11 @@ def dir_postaction(main_dir):
     for dir in os.listdir(main_dir):
         placeholder_path = os.path.join(main_dir, dir, ".update")
         if os.path.exists(placeholder_path):
-            #create_folder_opex(os.path.join(main_dir, dir))
+            #collect_stored_metadata(None, os.path.join(main_dir, dir))
+            create_folder_opex(os.path.join(main_dir, dir))
             #create_pax(os.path.join(main_dir, dir))
             os.remove(placeholder_path)
 
-def create_folder_opex(dir_path):
-    opex_ns_url = "http://www.openpreservationexchange.org/opex/v1.2"
-    oai_ns_url = "http://www.openarchives.org/OAI/2.0/"
-    dc_ns_url = "http://purl.org/dc/elements/1.1/"
-
-    nsmap = {'opex': opex_ns_url, 'oai':oai_ns_url, 'dc':dc_ns_url}
-    metadata_etree = etree.XML(metadata)
-    title = metadata_etree.xpath("//dc:title/text()", namespaces=nsmap)[0]  
-    description = metadata_etree.xpath("//dc:description/text()",
-            namespaces=nsmap)[0]  
-    identifiers = metadata_etree.xpath("//dc:identifiers/text()",
-        namespaces=nsmap)
-
-
-    E = ElementMaker(namespace=opex_ns_url, 
-        nsmap={'opex': opex_ns_url})
-     
-    pass 
 
 
 def process_records(records, config, format, save_files = False):
@@ -255,9 +239,14 @@ def create_opex_file(file_data, metadata, filename, identifier):
     
     nsmap = {'opex': opex_ns_url, 'oai':oai_ns_url, 'dc':dc_ns_url}
     metadata_etree = etree.XML(metadata)
-    title = metadata_etree.xpath("//dc:title/text()", namespaces=nsmap)[0]  
+    title = metadata_etree.xpath("//dc:title/text()", namespaces=nsmap)
+    if not title:
+        title = "NOT FOUND IN OAI_DC"
+    else:
+        title = title[0]  
     description = metadata_etree.xpath("//dc:description/text()",
-            namespaces=nsmap)[0]  
+            namespaces=nsmap)
+    description = "NOT FOUND IN OAI_DC" if not description else description[0] 
     identifiers = metadata_etree.xpath("//dc:identifiers/text()",
         namespaces=nsmap)
     
@@ -284,6 +273,60 @@ def create_opex_file(file_data, metadata, filename, identifier):
     )    
     return root
     
+def collect_stored_metadata(root_element, dir_path):
+    if root_element is None:
+        opex_ns_url = "http://www.openpreservationexchange.org/opex/v1.2"
+        root_element = ElementMaker(namespace=opex_ns_url, 
+            nsmap={'opex': opex_ns_url}).DescriptiveMetadata()
+    _, _, filepaths = next(os.walk(dir_path))
+    filepaths = [os.path.join(dir_path, i) for i in filepaths if i != ".update"]
+    trees = [etree.parse(i) for i in filepaths]
+    for tree in trees:
+        root_element.append(tree.getroot())
+    return root_element
+
+def create_folder_opex(dir_path):
+    opex_ns_url = "http://www.openpreservationexchange.org/opex/v1.2"
+    oai_ns_url = "http://www.openarchives.org/OAI/2.0/"
+    dc_ns_url = "http://purl.org/dc/elements/1.1/"
+
+    nsmap = {'opex': opex_ns_url, 'oai':oai_ns_url, 'dc':dc_ns_url}
+    metadata_etree = collect_stored_metadata(None, dir_path)
+    title = metadata_etree.xpath("//dc:title/text()", namespaces=nsmap)[0]  
+    description = metadata_etree.xpath("//dc:description/text()",
+            namespaces=nsmap)
+    if description:
+        description = description[0]
+    else:
+        description = "not found" 
+    identifiers = metadata_etree.xpath("//dc:identifiers/text()",
+        namespaces=nsmap)
+    E = ElementMaker(namespace=opex_ns_url, 
+            nsmap={'opex': opex_ns_url})
+    
+    manifest = E.Manifest(E.Folders(E.Folder("files")))
+    files_el = E.Files()
+    for f in os.listdir(os.path.join(dir_path, "files")):
+        fname = os.path.basename(f)
+        is_metadata_file = fname.endswith("opex")
+        files_el.append(E.File(fname, {'type': 'metadata' if is_metadata_file
+                else 'content'}))
+    E = ElementMaker(namespace=opex_ns_url, 
+        nsmap={'opex': opex_ns_url})
+    manifest.append(files_el)
+    
+    root = E.OPEXMetadata(
+         E.Properties(
+             E.Title(title), E.Decription(description) 
+         ),
+         E.Transfer(
+             manifest,
+         )
+     )
+    folder_name = os.path.basename(dir_path)
+    output_path = os.path.join(dir_path, folder_name + ".opex")
+    root.getroottree().write(output_path,encoding='utf-8', xml_declaration=True, pretty_print=True)
+    return root
 def create_xip(dir_path):
     xip_ns_url = "http://preservica.com/XIP/v6.0"
     nsmap = {"xip":xip_ns_url}
@@ -321,11 +364,11 @@ def runScythe(endpoint, metadata_format, last_run_date, today, config):
     try:
         with Scythe(endpoint, auth=auth) as scythe:
             print("Starting Scythe")
-            print(
-                scythe.client.get(
-                    "https://pittir.hykucommons.org/catalog/oai?verb=Identify"
-                ).headers)
-            print(scythe.identify())
+            #print(
+            #    scythe.client.get(
+            #        "https://pittir.hykucommons.org/catalog/oai?verb=Identify"
+            #    ).headers)
+            #print(scythe.identify())
             print("got identify")
             metadata_formats = scythe.list_metadata_formats()
             for meta_format in metadata_formats:
@@ -342,6 +385,7 @@ def runScythe(endpoint, metadata_format, last_run_date, today, config):
         dir_postaction(config["storage_directory"])
     except Exception as e:
         print(f"No records found or error occurred: {e}")
+        traceback.print_exc()
         
 
 
