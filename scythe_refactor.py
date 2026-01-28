@@ -94,7 +94,6 @@ def main():
                             from_ = config["last_run"],
                             to_ = config["today"])
 
-            save_metadata_records(records, meta_format, config)
 
 if __name__ == '__main__':
     main()
