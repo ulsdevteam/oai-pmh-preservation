@@ -149,6 +149,9 @@ def get_default_http_client():
         
 def save_metadata_file(record, metadata_format, config):
     record_path, _ = get_record_header_info(config["storage_directory"], record)
+    files_folder = os.path.join(record_path, "files")
+    if not os.path.exists(files_folder):
+        os.makedirs(files_folder, exist_ok = True)
     metadata_format = metadata_format.metadataPrefix
     file_uris = extract_file_uris(record, config["xpath"], config["namespaces"])
     print(file_uris)
