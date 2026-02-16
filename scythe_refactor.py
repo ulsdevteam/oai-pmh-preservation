@@ -175,10 +175,9 @@ def save_metadata_record(record:OAIItem, metadata_format:str, config: dict):
     if they existed
     """
     pathjoin = os.path.join
-    identifier, record_path = get_record_header_info(
+    record_path, identifier = get_record_header_info(
             config["storage_directory"], record
         )
-    
     metadata_file_path = pathjoin(record_path, 
             f"{identifier}.{metadata_format}")  
     if not os.path.exists(record_path):
