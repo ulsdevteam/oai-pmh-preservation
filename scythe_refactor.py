@@ -62,10 +62,13 @@ def preprocess_config(config:dict):
     - storage_directory: path provided converted to absolute path
     """
     storage_dir = config.get("storage_directory")
-    abspath = os.path.abspath
-
+    
     if storage_dir is not None:
-        config["storage_directory"] = abspath(storage_dir)
+        abspath = os.path.abspath(config["storage_directory"])
+        if abspath != config["storage_directory"]:
+            log.warn(f"path {config[storage_directory]} "
+                f"is ambiguous. Using path {abspath}")
+        config["storage_directory"] = abspath
             
 
 def load_config(conf_location : str | Path = "config.txt") -> dict:
@@ -100,9 +103,9 @@ def load_last_run(state_location : Path | str = "state.txt") -> (datetime.date, 
             last_run_date = datetime.strptime(last_run_str, 
                     "%Y-%m-%d").date()
     except (FileNotFoundError, ValueError):
-        print("State file not found or invalid format. " 
+        log.warn("State file not found or invalid format. " 
             "Defaulting to yesterday.")
-        last_run_date = date.today()
+        return None, None
     today = date.today()
     return last_run_date, today
 
