@@ -1,10 +1,15 @@
+# builtin imports
 import requests
-from lxml import etree
 from collections import namedtuple
-import httpx
 import truststore
 from urllib.parse import urljoin
 import time
+import logging
+
+# foreign imports
+import httpx
+from lxml import etree
+
 truststore.inject_into_ssl()
 
 user_agent_headers = {
@@ -39,19 +44,10 @@ def login(conf, uname, passwd):
     page = httpx.get(conf.login_uri, headers=user_agent_headers)
     content = page.text
     if page.status_code == 403:
-        print("Most likely Cloudflare issue.")
-        '''
-        stuff_start = content.index("a.src") + len("a.src = ")
-        stuff_end = content.index(";", stuff_start)
-        time.sleep(3)
-        cf_url = content[stuff_start:stuff_end].strip("'")
-        r = httpx.get(urljoin(conf.login_uri, cf_url))
-        print(r.headers, r.status_code)
-        '''
-    #print(page.headers)
+        logging.warn("Permission denied to get login page. Most likely Cloudflare issue.")
+
     if type(content) == bytes:
         content = content.decode("utf-8")
-    #print(content)
     page.raise_for_status()
     et = etree.fromstring(content, parser=etree.HTMLParser())
     uname_form_name = et.xpath(uname_xpath)[0]
@@ -60,13 +56,11 @@ def login(conf, uname, passwd):
     #    namespaces={'r': et.xpath("namespace-uri()")})[0]
     form_action_uri = et.xpath(form_action_xpath) 
     #        namespaces={'r': et.xpath("namespace-uri()")})[0]
-    print(uname_form_name, passwd_form_name, form_action_uri)
-    
+    log.info(f"form action uri used: {form_action_uri}") 
     post_ret = requests.post(requests.compat.urljoin(conf.login_uri,form_action_uri), data={uname_form_name: uname, 
             passwd_form_name: passwd})
     post_ret.raise_for_status()
     return {conf.send_header: post_ret.headers[conf.gather_header]}
-    print(post_obj.content, post_obj.headers)
     
     
 
