@@ -118,28 +118,31 @@ def update_last_run(state_location : Path | str = "state.txt"):
 def authenticate_scythe(client: Scythe, config:dict) -> Scythe:
     """
     Add auth information to underlying httpx client in 
-    scythe client. Auth types supported
+    scythe client. Multiple auth types can be provided in 
+    config["login_types"] at the same time as a list
+    Auth types supported
 
     basic -> basic http username:password
     cookie -> a login form is submitted to a user provided website,
         and response is set as header
     """ 
-    if config["login_type"] == "basic":
-        client.client.auth = httpx.BasicAuth(
-                                config["username"], 
-                                config["password"])
-        return client
-    auth_conf = ConfigData(
-        login_uri = config["login_uri"],
-        login_uname_el = config["login_username_xpath"],
-        login_passwd_el = config["login_password_xpath"],
-        login_form_el = config["login_form_xpath"],
-        gather_header = "Set-Cookie",
-        send_header = "Cookie"
-    )
-    login_headers = login(auth_conf, config["username"],
-                                config["password"])
-    client.client.headers.update(login_headers)
+    for login_type in config["login_types"]:
+        if login_type == "basic":
+            client.client.auth = httpx.BasicAuth(
+                                    config["username"], 
+                                    config["password"])
+        if login_type == "cookie":
+            auth_conf = ConfigData(
+                login_uri = config["login_uri"],
+                login_uname_el = config["login_username_xpath"],
+                login_passwd_el = config["login_password_xpath"],
+                login_form_el = config["login_form_xpath"],
+                gather_header = "Set-Cookie",
+                send_header = "Cookie"
+            )
+            login_headers = login(auth_conf, config["username"],
+                                        config["password"])
+            client.client.headers.update(login_headers)
     return client
 
 def fetch_metadata_records(scythe_client:Scythe, metadata_format:str,
