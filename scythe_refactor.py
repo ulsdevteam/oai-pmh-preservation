@@ -167,7 +167,6 @@ def get_record_header_info(basepath:Path | str, record: OAIItem) -> (Path | str,
     pathjoin = os.path.join
 
     identifier = record.header.identifier  
-    identifier = identifier.replace(":", "_")
     record_path = os.path.join(basepath, identifier)
     return record_path, identifier
 
