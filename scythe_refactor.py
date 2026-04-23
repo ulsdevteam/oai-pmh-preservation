@@ -66,7 +66,7 @@ def preprocess_config(config:dict):
     if storage_dir is not None:
         abspath = os.path.abspath(config["storage_directory"])
         if abspath != config["storage_directory"]:
-            log.warn(f"path {config[storage_directory]} "
+            log.warn(f"path {storage_dir} "
                 f"is ambiguous. Using path {abspath}")
         config["storage_directory"] = abspath
             
@@ -87,7 +87,9 @@ def load_config(conf_location : str | Path = "config.txt") -> dict:
         conf = tomllib.load(conf_file)
         used_defaults = {(k,v) for k, v in defaults.items()
             if k not in conf}
-        conf["last_run"], conf["today"] = last_run, today
+        last_run, today = None, None
+        if conf.get("fetch_all") == 1:
+            conf["last_run"], conf["today"] = last_run, today
         logging.info(f"conf provided: {conf}")
         logging.info(f"Using defaults: {used_defaults}")
         return defaults | conf
@@ -137,15 +139,19 @@ def authenticate_scythe(client: Scythe, config:dict) -> Scythe:
         if login_type == "cookie":
             auth_conf = ConfigData(
                 login_uri = config["login_uri"],
-                login_uname_el = config["login_username_xpath"],
-                login_passwd_el = config["login_password_xpath"],
-                login_form_el = config["login_form_xpath"],
+                login_uname_el = config["username_xpath"],
+                login_passwd_el = config["password_xpath"],
+                login_form_el = config["form_xpath"],
                 gather_header = "Set-Cookie",
                 send_header = "Cookie"
             )
             login_headers = login(auth_conf, config["username"],
                                         config["password"])
+            print(login_headers)
             client.client.headers.update(login_headers)
+    global request_client
+    if request_client is None:
+        request_client = client.client # use the same client
     return client
 
 def fetch_metadata_records(scythe_client:Scythe, metadata_format:str,
@@ -154,10 +160,13 @@ def fetch_metadata_records(scythe_client:Scythe, metadata_format:str,
     perform ListRecords OAI verb from last run to today, 
     and grab first config["limit_entries"] results 
     """
+    logger.info(f"{config['last_run']}")
     records = scythe_client.list_records(
         metadata_prefix = metadata_format,
         from_ = config["last_run"], until = config["today"]) 
     
+    for _ in islice(records, config["skip_count"]):
+        next(records)
     records = islice(records, config["limit_entries"])
     return records
   
@@ -167,10 +176,8 @@ def get_record_header_info(basepath:Path | str, record: OAIItem) -> (Path | str,
     extract identifier from record header and the corresponding
     path where record would be stored in filesystem
     """
-    pathjoin = os.path.join
-
     identifier = record.header.identifier  
-    record_path = os.path.join(basepath, identifier)
+    record_path = os.path.join(basepath, identifier) + ".pax"
     return record_path, identifier
 
 def save_metadata_record(record:OAIItem, metadata_format:str, config: dict):
@@ -194,8 +201,17 @@ def save_metadata_record(record:OAIItem, metadata_format:str, config: dict):
     with open(metadata_file_path, 'w', 
             encoding='utf-8') as f:
         log.info(f"writing file: {metadata_file_path}")
-        f.write(str(record))  # Save as string for now
+        tmp_tree = etree.fromstring(str(record))
+        tmp_tree = tmp_tree.find("ns:metadata", namespaces={'ns': 'http://www.openarchives.org/OAI/2.0/'})
+        tmp_tree = tmp_tree[0] # first child
+        # print(f"format: {metadata_format}")
+        # print(etree.tostring(tmp_tree)[:30]) 
+        #if record.metadata:
+        #    print("metadata: ", str(record.metadata)[:10])
+        #print(f"record: {str(record)}")
+        f.write(etree.tostring(tmp_tree).decode())  # Save as string for now
     
+
 
 def extract_file_uris(record_xml: str | bytes, xpath_expr:str, ns_dict:str) -> list[str]:
     """
@@ -209,12 +225,15 @@ def extract_file_uris(record_xml: str | bytes, xpath_expr:str, ns_dict:str) -> l
     """
     tree = etree.XML(str(record_xml))
     logger.debug(ns_dict)
+    print(xpath_expr)
     vals = tree.xpath(xpath_expr, namespaces=ns_dict)
     logger.debug(vals, [is_valid_url(x) for x in vals])
     return list(filter(is_valid_url, tree.xpath(xpath_expr, namespaces=ns_dict)))  
 
 def get_default_http_client():
     # return an authenticated httpx client
+    if request_client is not None:
+        return request_client
     return httpx # placeholder: replace with authenticated client
         
 def save_metadata_file(record:OAIItem, metadata_format:str, config:dict):
@@ -223,10 +242,12 @@ def save_metadata_file(record:OAIItem, metadata_format:str, config:dict):
     and save results on disk
     """
     record_path, _ = get_record_header_info(config["storage_directory"], record)
-    files_folder = os.path.join(record_path, "files")
+    files_folder = os.path.join(record_path,
+                                "Representation_Preservation")
     if not os.path.exists(files_folder):
         os.makedirs(files_folder, exist_ok = True)
-    file_uris = extract_file_uris(record, config["xpath"], config["namespaces"])
+    file_uris = extract_file_uris(record, config["fetch_xpath"],
+                                  config["fetch_namespaces"])
     print(file_uris)
     for uri in file_uris:
         logger.info(f"getting uri {uri}")
@@ -238,16 +259,49 @@ def save_metadata_file(record:OAIItem, metadata_format:str, config:dict):
             logger.warn(f"failed to get {uri} due to {e}")
             continue
         file_name = os.path.basename(uri)
-        file_path = os.path.join(record_path, "files", file_name)
+        file_path = os.path.join(files_folder, file_name)
         with open(file_path, "w") as f:
             logger.info(f"saving {uri} @ {file_path}")
             f.write(response.text)
         
-def main():
-    config = load_config()
+
+
+    
+def get_identifiers(scythe, config):
+    identifiers = set()
+    formats = scythe.list_metadata_formats()
+    for mformat in formats:
+        mprefix = mformat.metadataPrefix
+        identifier_fetch = scythe.list_identifiers(
+                metadata_prefix = mprefix,
+                from_ = config["last_run"],   
+                until=config["today"])
+        identifier_fetch = islice(identifier_fetch,
+                             config["limit_entries"])
+        for header in identifier_fetch:
+            identifiers.add(header.identifier)
+    return identifiers
+
+def new_main():
+    config = load_config("test.toml")
     preprocess_config(config)
     with Scythe(config["base_url"]) as scythe:
-        authenticate_scythe(scythe, config)
+        authenticate_scythe(scythe, config["auth"])
+        # list identifiers
+        identifiers = get_identifiers(scythe, config)
+
+        for identifier in identifiers:
+            formats = scythe.list_metadata_formats(identifier)
+            for mformat in formats:
+                mprefix = mformat.metadataPrefix
+                record = scythe.get_record(identifier, 
+                                           mprefix)
+
+def main():
+    config = load_config("test.toml")
+    preprocess_config(config)
+    with Scythe(config["base_url"]) as scythe:
+        authenticate_scythe(scythe, config["auth"])
         formats = scythe.list_metadata_formats()
         for meta_format in formats:
             meta_format_str = meta_format.metadataPrefix
