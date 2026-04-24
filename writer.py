@@ -1,6 +1,6 @@
-#from . import model
-import model
-from model import OpexXmlHelper
+from . import model
+#import model
+from .model import OpexXmlHelper
 from lxml import etree
 import logging
 
