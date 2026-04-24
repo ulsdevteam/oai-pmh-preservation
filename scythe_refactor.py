@@ -8,6 +8,7 @@ from typing import Iterator
 from oaipmh_scythe.models import OAIItem
 
 # inbuilt imports
+import time
 import os
 from urllib.parse import urlparse
 import logging
@@ -236,6 +237,18 @@ def get_default_http_client():
         return request_client
     return httpx # placeholder: replace with authenticated client
         
+
+def _retry_for_too_many_requests(client, url, retry_time = 1):
+    # sleep first
+    response_code = 429
+    response = None
+    while response_code == 429:
+        time.sleep(retry_time)
+        response = client.get(url)
+        response_code = response.status_code
+    return response
+
+    
 def save_metadata_file(record:OAIItem, metadata_format:str, config:dict):
     """
     Extract URIs from metadata file in record, fetch files,
@@ -254,6 +267,7 @@ def save_metadata_file(record:OAIItem, metadata_format:str, config:dict):
         client = get_default_http_client()
         try:
             response = client.get(uri)
+            _retry_for_too_many_requests(client, uri)
             response.raise_for_status()
         except Exception as e:
             logger.warn(f"failed to get {uri} due to {e}")
