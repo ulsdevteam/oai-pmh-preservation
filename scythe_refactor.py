@@ -139,12 +139,15 @@ def authenticate_scythe(client: Scythe, config:dict) -> Scythe:
         and response is set as header
     """ 
     basic_auth_var = None
-    for login_type in config["login_types"]:
-        if login_type == "basic":
-            basic_auth_var = httpx.BasicAuth(
+    if "basic" in config["login_types"]:
+        basic_auth_var = httpx.BasicAuth(
                                     config["basic"]["username"], 
                                     config["basic"]["password"])
-            client.client.auth = basic_auth_var
+        client.client.auth = basic_auth_var
+    for login_type in config["login_types"]:
+        if login_type == "basic":
+            continue
+            
         if login_type == "cookie":
             auth_conf = ConfigData(
                 login_uri = config["login_uri"],
@@ -255,10 +258,30 @@ def _retry_for_too_many_requests(client, url, retry_time = 1):
     while response_code == 429:
         time.sleep(retry_time)
         response = client.get(url)
-        response_code = response.status_code
+        response_code = response.status_code     
     return response
 
-    
+
+def extract_filename(response):
+    # prefer content-disposation if present, ortherwise use basename of original url
+    headers = response.headers
+    hd = headers["Content-Disposition"]
+    logger.info(f"Content-Disposition value: {hd}")
+    if hd is not None and "filename" in hd:
+        # RFC 6266 specifies obscure cases for filename in Content-Disposition
+        # httpx parses headers naively and returns key value pairs pairs
+        # rfc6266 and pyrfc6266 provide dedicated parsers but don't have much popularity 
+        # and at risk of going unmaintained
+
+        filename_start = hd.index("filename") + len("filename")
+        filename_start = hd.index("=", filename_start) + 1
+        filename_end = hd.find(";", filename_start) 
+        filename = hd[filename_start:filename_end] 
+        # filename_end = -1 means last char is skipped, which is usually '"' which would be stripped anyway
+        return filename.strip().strip('";')
+    filename = os.path.basename(str(response.url))
+    return filename
+
 def save_metadata_file(record:OAIItem, metadata_format:str, config:dict):
     """
     Extract URIs from metadata file in record, fetch files,
@@ -277,12 +300,13 @@ def save_metadata_file(record:OAIItem, metadata_format:str, config:dict):
         client = get_default_http_client()
         try:
             response = client.get(uri)
-            _retry_for_too_many_requests(client, uri)
+            if response.status_code == 429:
+                response = _retry_for_too_many_requests(client, uri)
             response.raise_for_status()
         except Exception as e:
             logger.warn(f"failed to get {uri} due to {e}")
             continue
-        file_name = os.path.basename(uri)
+        file_name = extract_filename(response)
         file_path = os.path.join(files_folder, file_name)
         with open(file_path, "w") as f:
             logger.info(f"saving {uri} @ {file_path}")
