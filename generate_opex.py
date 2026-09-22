@@ -35,10 +35,10 @@ def write_pax_opex(pax_path, general_metadata):
     print(d)
     parent = os.path.dirname(pax_path)
     # create pax opex
-    fs_content = opex_parser.model.OpexFolderContent.from_pax_fs(
-        os.path.join(root, d) 
+    fs_content = opex_parser.model.OpexPaxContent.from_fs(
+        os.path.join(root, d), [opex_parser.model_types.HashAlgorithm.sha1]
         )
-    writer = opex_parser.Writer(os.path.join(root, d) + ".opex", is_dir = True)
+    writer = opex_parser.Writer(os.path.join(root, d) + ".opex", is_dir = True, is_pax = True)
     writer.write(general_metadata, fs_content)
     
 def extract_general_metadata(tree, conf, source_id):
@@ -57,23 +57,33 @@ def extract_general_metadata(tree, conf, source_id):
             else:
                 res = res[0]
         metadata_dict[key] = res
-    model_var = opex_parser.model.OpexMetadataContent(**metadata_dict,
-                                            identifier_types =
-                                            None, 
-                                            source_id = source_id)
+    model_var = opex_parser.model.OpexMetadataContent(
+                                            title = metadata_dict["title"],
+                                            description = metadata_dict["description"],
+                                            source_id = source_id,
+                                            identifiers = [opex_parser.model_types.CompoundTypes.Identifier(value = x, type = None) for x in metadata_dict["identifiers"]],
+                                            descriptive_metadata = None)
     return model_var
 
 def create_subfile_opexes(path, files_folder, identifier):
+    print(path, files_folder)
+    if not os.path.exists(os.path.join(path, files_folder)):
+        print(f"no artifacts found in {os.path.join(path, files_folder)}")
+        return 
     files_path, _, content_files = next(os.walk(os.path.join(path,files_folder)))
+    
     for file in content_files:
         if file.endswith("opex"):
             continue
-        stub = opex_parser.model.OpexMetadataContent(title = None,
-                                                     description = None, 
-                        source_id = identifier + "/" + file)
+        stub = opex_parser.model.OpexMetadataContent(
+                        title = None,
+                        description = None, 
+                        source_id = identifier + "/" + file, 
+                        identifiers = [],
+                        descriptive_metadata = None)
         fs_content = opex_parser.model.OpexFileContent.from_fs(
                 os.path.join(files_path, file), ['SHA-1'])
-        writer = opex_parser.Writer(os.path.join(files_path, file) + ".opex", is_dir = False)
+        writer = opex_parser.Writer(os.path.join(files_path, file) + ".opex", is_dir = False, is_pax=False)
         writer.write(stub, fs_content)
 
 if __name__ == '__main__':
@@ -88,15 +98,22 @@ if __name__ == '__main__':
         path, folders, files = next(os.walk(os.path.join(root, d)))
         metadata_trees = []
         model_var = None
+        model_tree = None
         for file in files:
             if file.endswith("opex"):
                 continue
+            file_path = os.path.join(path, file)
             tree = etree.parse(os.path.join(path, file))
             if file.endswith(conf["metadata_format"]):
-                model_var = extract_general_metadata(tree, conf, 
+                model_tree = tree
+            metadata_trees.append(tree)
+            os.remove(file_path)
+            
+        
+        model_var = extract_general_metadata(model_tree, conf, 
                                                      source_id=identifier)
 
-            metadata_trees.append(tree)
+        
         for tree in metadata_trees:
             model_var.append_descriptive_metadata(tree)
 

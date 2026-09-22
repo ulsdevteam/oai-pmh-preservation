@@ -84,13 +84,16 @@ def load_config(conf_location : str | Path = "config.txt") -> dict:
         "limit_entries": 5
     }
     last_run, today = load_last_run()
+    
     with open(conf_location, "rb") as conf_file:
         conf = tomllib.load(conf_file)
         used_defaults = {(k,v) for k, v in defaults.items()
             if k not in conf}
-        last_run, today = None, None
-        if conf.get("fetch_all") == 1:
-            conf["last_run"], conf["today"] = last_run, today
+        #last_run, today = None, None
+        #if conf.get("fetch_all") == 1:
+        conf["last_run"], conf["today"] = last_run, today
+        print(last_run)
+        #raise SystemExit(1)
         logging.info(f"conf provided: {conf}")
         logging.info(f"Using defaults: {used_defaults}")
         return defaults | conf
@@ -105,12 +108,15 @@ def load_last_run(state_location : Path | str = "state.txt") -> (datetime.date, 
             last_run_str = stateFile.read().strip()
             last_run_date = datetime.strptime(last_run_str, 
                     "%Y-%m-%d").date()
+            today = date.today()
+            print(last_run_date, last_run_str)
+            return last_run_date, today
+            
     except (FileNotFoundError, ValueError):
         log.warn("State file not found or invalid format. " 
             "Defaulting to yesterday.")
         return None, None
-    today = date.today()
-    return last_run_date, today
+    
 
 def update_last_run(state_location : Path | str = "state.txt"):
     """
@@ -132,22 +138,24 @@ def authenticate_scythe(client: Scythe, config:dict) -> Scythe:
     cookie -> a login form is submitted to a user provided website,
         and response is set as header
     """ 
+    basic_auth_var = None
     for login_type in config["login_types"]:
         if login_type == "basic":
-            client.client.auth = httpx.BasicAuth(
-                                    config["username"], 
-                                    config["password"])
+            basic_auth_var = httpx.BasicAuth(
+                                    config["basic"]["username"], 
+                                    config["basic"]["password"])
+            client.client.auth = basic_auth_var
         if login_type == "cookie":
             auth_conf = ConfigData(
                 login_uri = config["login_uri"],
-                login_uname_el = config["username_xpath"],
-                login_passwd_el = config["password_xpath"],
-                login_form_el = config["form_xpath"],
+                login_uname_el = config["cookie"]["username_xpath"],
+                login_passwd_el = config["cookie"]["password_xpath"],
+                login_form_el = config["cookie"]["form_xpath"],
                 gather_header = "Set-Cookie",
                 send_header = "Cookie"
             )
-            login_headers = login(auth_conf, config["username"],
-                                        config["password"])
+            login_headers = login(auth_conf, config["cookie"]["username"],
+                                        config["cookie"]["password"], basic_auth = basic_auth_var)
             print(login_headers)
             client.client.headers.update(login_headers)
     global request_client
@@ -166,8 +174,8 @@ def fetch_metadata_records(scythe_client:Scythe, metadata_format:str,
         metadata_prefix = metadata_format,
         from_ = config["last_run"], until = config["today"]) 
     
-    for _ in islice(records, config["skip_count"]):
-        next(records)
+    # consume iterator skip_count times
+    [None for _ in islice(records, config["skip_count"]) if False] 
     records = islice(records, config["limit_entries"])
     return records
   
@@ -195,7 +203,9 @@ def save_metadata_record(record:OAIItem, metadata_format:str, config: dict):
             f"{identifier}.{metadata_format}")  
     if not os.path.exists(record_path):
         os.makedirs(record_path)
+        identifiers_being_updated.add(identifier)
     elif identifier not in identifiers_being_updated:
+        print(f"deleting content for {identifier} namely {os.listdir(record_path)}")
         shutil.rmtree(record_path)
         os.makedirs(record_path)
         identifiers_being_updated.add(identifier)

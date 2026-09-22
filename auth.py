@@ -49,12 +49,17 @@ _conf = ConfigData(
     
 
 
-def login(conf, uname, passwd):
+def login(conf, uname, passwd, basic_auth = None):
     # given xpath to input element get the form field name
+    client = None
+    if client is None:
+        client = httpx.Client(auth = basic_auth)
+    else:
+        client = httpx.Client()
     uname_xpath = conf.login_uname_el
     passwd_xpath = conf.login_passwd_el
     form_action_xpath = conf.login_form_el
-    page = httpx.get(conf.login_uri, headers=user_agent_headers)
+    page = client.get(conf.login_uri, headers=user_agent_headers)
     cookie = page.cookies
     content = page.text
     #print(content)
@@ -63,7 +68,13 @@ def login(conf, uname, passwd):
 
     if type(content) == bytes:
         content = content.decode("utf-8")
-    page.raise_for_status()
+    try:
+        page.raise_for_status()
+    except:
+        with open("error.html", "w") as f:
+            print(page.cookies)
+            f.write(content)
+            raise SystemExit(1)
     et = etree.fromstring(content, parser=etree.HTMLParser())
     submit_dict = {}
     try:
@@ -90,13 +101,16 @@ def login(conf, uname, passwd):
 
     logging.info(f"form action uri used: {form_action_uri}") 
     post_ret = (
-        requests.post(requests.compat.urljoin(conf.login_uri,form_action_uri),
+        client.post(requests.compat.urljoin(conf.login_uri,form_action_uri),
                   data = submit_dict, cookies = cookie))
 
     #print(post_ret, post_ret.headers, post_ret.content, sep='\n\n')
     with open("error.html", 'w') as f:
         f.write(post_ret.content.decode())
-    post_ret.raise_for_status()
+    if post_ret.status_code > 400:
+        print("Failed to successfully fetch page, error noted in error.html")
+        raise SystemExit(1)
+    #post_ret.raise_for_status()
     return {conf.send_header: post_ret.headers[conf.gather_header]}
     
     
