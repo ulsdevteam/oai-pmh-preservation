@@ -23,6 +23,7 @@ import shutil
 from lxml import etree
 from oaipmh_scythe import Scythe
 import httpx
+import pyrfc6266
 
 #tomllib is inbuilt >=3.11. Use tomlli as fallback
 try:
@@ -167,18 +168,19 @@ def authenticate_scythe(client: Scythe, config:dict) -> Scythe:
     return client
 
 def fetch_metadata_records(scythe_client:Scythe, metadata_format:str,
-    config:dict) -> Iterator[OAIItem]:
+    config:dict, set_ = None) -> Iterator[OAIItem]:
     """
     perform ListRecords OAI verb from last run to today, 
     and grab first config["limit_entries"] results 
     """
     logger.info(f"{config['last_run']}")
+    print(set_)
     records = scythe_client.list_records(
         metadata_prefix = metadata_format,
-        from_ = config["last_run"], until = config["today"]) 
-    
+        from_ = config["last_run"], until = config["today"], set_ = set_) 
+    print(next(records))
     # consume iterator skip_count times
-    [None for _ in islice(records, config["skip_count"]) if False] 
+    #[None for _ in islice(records, config["skip_count"]) if False] 
     records = islice(records, config["limit_entries"])
     return records
   
@@ -265,8 +267,13 @@ def _retry_for_too_many_requests(client, url, retry_time = 1):
 def extract_filename(response):
     # prefer content-disposation if present, ortherwise use basename of original url
     headers = response.headers
+    
     hd = headers["Content-Disposition"]
     logger.info(f"Content-Disposition value: {hd}")
+    if hd is not None:
+        filename = pyrfc6266.parse_filename(hd)
+        print(filename)
+        return filename
     if hd is not None and "filename" in hd:
         # RFC 6266 specifies obscure cases for filename in Content-Disposition
         # httpx parses headers naively and returns key value pairs pairs
@@ -350,19 +357,26 @@ def main():
     preprocess_config(config)
     with Scythe(config["base_url"]) as scythe:
         authenticate_scythe(scythe, config["auth"])
+        set_list = [None]
+
+        if config.get("use_sets") is not None and config.get("sets") is not None and len(config.get("sets")) > 0:
+            set_list = config.get("sets")
         formats = scythe.list_metadata_formats()
-        for meta_format in formats:
-            meta_format_str = meta_format.metadataPrefix
-            records = fetch_metadata_records(
+        for set_ in set_list:
+            # sets aren't currently distinguished and stored in the same flat structure
+            for meta_format in formats:
+                meta_format_str = meta_format.metadataPrefix
+                records = fetch_metadata_records(
                             scythe, 
                             meta_format_str,
-                            config)
-            for record in records:
-                save_metadata_record(record, meta_format_str, 
-                    config)
-                if meta_format_str == config["metadata_format"]:
-                    logger.info("saving metadata files")
-                    save_metadata_file(record, meta_format_str, config)
+                            config, set_)
+                print(records)
+                for record in records:
+                    save_metadata_record(record, meta_format_str, 
+                        config)
+                    if meta_format_str == config["metadata_format"]:
+                        logger.info("saving metadata files")
+                        save_metadata_file(record, meta_format_str, config)
                 
 
 
