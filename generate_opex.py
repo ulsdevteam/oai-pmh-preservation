@@ -107,7 +107,7 @@ if __name__ == '__main__':
             if file.endswith(conf["metadata_format"]):
                 model_tree = tree
             metadata_trees.append(tree)
-            #os.remove(file_path)
+            os.remove(file_path)
             
         
         model_var = extract_general_metadata(model_tree, conf, 
