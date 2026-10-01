@@ -359,7 +359,7 @@ def main():
         authenticate_scythe(scythe, config["auth"])
         set_list = [None]
 
-        if config.get("use_sets") is not None and config.get("sets") is not None and len(config.get("sets")) > 0:
+        if config.get("sets") is not None and len(config.get("sets")) > 0:
             set_list = config.get("sets")
         formats = scythe.list_metadata_formats()
         for set_ in set_list:
