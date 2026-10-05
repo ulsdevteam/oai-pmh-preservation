@@ -73,6 +73,6 @@ dc = "http://purl.org/dc/elements/1.1/"
 #identifiers = <XPATH to values of metadata_format xml to use as identifier within opex:Identifiers>
 
 
-# namespace aliases used within opex.xpaths as jey = "value" pairs
+# namespace aliases used within opex.xpaths as key = "value" pairs
 [opex.ns]
 opex= "http://www.openpreservationexchange.org/opex/v1.2"
