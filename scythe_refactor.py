@@ -206,14 +206,14 @@ def save_metadata_record(record:OAIItem, metadata_format:str, config: dict):
         )
     metadata_file_path = pathjoin(record_path, 
             f"{identifier}.{metadata_format}")  
-    if not os.path.exists(record_path):
-        os.makedirs(record_path)
-        identifiers_being_updated.add(identifier)
-    elif identifier not in identifiers_being_updated:
-        print(f"deleting content for {identifier} namely {os.listdir(record_path)}")
-        shutil.rmtree(record_path)
-        os.makedirs(record_path)
-        identifiers_being_updated.add(identifier)
+    #if not os.path.exists(record_path):
+    #    os.makedirs(record_path)
+    #    identifiers_being_updated.add(identifier)
+    #elif identifier not in identifiers_being_updated:
+    #    print(f"deleting content for {identifier} namely {os.listdir(record_path)}")
+    #    shutil.rmtree(record_path)
+    #    os.makedirs(record_path)
+    #    identifiers_being_updated.add(identifier)
     with open(metadata_file_path, 'w', 
             encoding='utf-8') as f:
         log.info(f"writing file: {metadata_file_path}")
@@ -322,7 +322,7 @@ def save_metadata_file(record:OAIItem, metadata_format:str, config:dict):
 
 
     
-def get_identifiers(scythe, config):
+def get_identifiers(scythe, set_, config):
     identifiers = set()
     formats = scythe.list_metadata_formats()
     for mformat in formats:
@@ -330,27 +330,45 @@ def get_identifiers(scythe, config):
         identifier_fetch = scythe.list_identifiers(
                 metadata_prefix = mprefix,
                 from_ = config["last_run"],   
-                until=config["today"])
+                until=config["today"], set_ = set_)
         identifier_fetch = islice(identifier_fetch,
                              config["limit_entries"])
         for header in identifier_fetch:
             identifiers.add(header.identifier)
     return identifiers
 
+def clear_existing_identifier(identifier, config):
+    path = os.path.join(config["storage_directory"], identifier + ".pax")
+    if os.path.exists(path):
+        shutil.rmtree(path) 
+        # some small chance of data loss, if fail happens in fetch of identifier documents
+        # rmtree could be replaced with moving to a tmp folder which then gets removed on success
+    os.makedirs(path, exist_ok=True)
+
+    pass
 def new_main():
     config = load_config("test.toml")
     preprocess_config(config)
     with Scythe(config["base_url"]) as scythe:
         authenticate_scythe(scythe, config["auth"])
-        # list identifiers
-        identifiers = get_identifiers(scythe, config)
+        
+        set_list = [None]
 
-        for identifier in identifiers:
-            formats = scythe.list_metadata_formats(identifier)
-            for mformat in formats:
-                mprefix = mformat.metadataPrefix
-                record = scythe.get_record(identifier, 
+        if config.get("sets") is not None and len(config.get("sets")) > 0:
+            set_list = config.get("sets")
+        for set_ in set_list:
+            # list identifiers
+            identifiers = get_identifiers(scythe, set_, config)
+            for identifier in identifiers:
+                clear_existing_identifier(identifier, config)
+                formats = scythe.list_metadata_formats(identifier)
+                for mformat in formats:
+                    mprefix = mformat.metadataPrefix
+                    record = scythe.get_record(identifier, 
                                            mprefix)
+                    save_metadata_record(record, mprefix, config)
+                    if mprefix == config["metadata_format"]:
+                        save_metadata_file(record, mprefix, config)
 
 def main():
     config = load_config("test.toml")
@@ -381,4 +399,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    new_main()
