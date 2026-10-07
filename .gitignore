@@ -3,3 +3,4 @@ metadata/*
 oaipmh-storage/*
 !oaipmh-storage/.gitkeep
 config.txt
+state.txt
