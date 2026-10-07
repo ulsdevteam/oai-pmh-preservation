@@ -54,7 +54,7 @@ dc = "http://purl.org/dc/elements/1.1/"
 
 #username=<login page username>
 #passowrd=<login page password>
-#form_xpath=<XPATH tp form html element>
+#form_xpath=<XPATH to form html element>
 #username_xpath=<XPATH to username input html element>
 #password_xpath=<XPATH to password input html element>
 #gather_header=<HTTP header in response that contains auth token value>
