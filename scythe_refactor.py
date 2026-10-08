@@ -84,7 +84,8 @@ def load_config(conf_location : str | Path = "config.txt") -> dict:
     defaults = {
         "limit_entries": 5
     }
-    last_run, today = load_last_run(state_location = "state.txt")
+    last_run = load_last_run(state_location = "state.txt")
+    today = datetime.now()
     
     with open(conf_location, "rb") as conf_file:
         conf = tomllib.load(conf_file)
@@ -93,11 +94,8 @@ def load_config(conf_location : str | Path = "config.txt") -> dict:
         #last_run, today = None, None
         #if conf.get("fetch_all") == 1:
         if conf.get("mode") is None or conf["mode"] == "harvest": 
-            conf["_from"], conf["_until"] = last_run, today
             conf["_from"] = last_run
             conf["_until"] = conf.get("until", today)
-            if conf.get("until") is not None:
-                conf["_until"] = conf["until"]
         elif conf.get("mode") == "fetch":
             conf["_from"] = conf.get("from", None)
             conf["_until"] = conf.get("until", None) 
@@ -112,8 +110,8 @@ def load_config(conf_location : str | Path = "config.txt") -> dict:
         logging.info(f"conf provided: {conf}")
         logging.info(f"Using defaults: {used_defaults}")
         return defaults | conf
-     
-def load_last_run(state_location : Path | str = "state.txt") -> (str | datetime, str | datetime):
+
+def load_last_run(state_location : Path | str = "state.txt") -> str | datetime | None:
     """
     load date stored on filesystem on which date script
     was last executed, and the current date today
@@ -124,14 +122,12 @@ def load_last_run(state_location : Path | str = "state.txt") -> (str | datetime,
             last_run_date = datetime.fromisoformat(last_run_str)
             #last_run_date = datetime.strptime(last_run_str, 
             #        "%Y-%m-%d").date()
-            today = datetime.now()
-            print(last_run_date, last_run_str)
-            return last_run_date, today
+            return last_run_date
             
     except (FileNotFoundError, ValueError):
         log.warn("State file not found or invalid format. " 
             "Defaulting to yesterday.")
-        return None, datetime.now()
+        return None
     
 
 def update_last_run(state_location : Path | str = "state.txt", value: datetime = None):
@@ -139,7 +135,6 @@ def update_last_run(state_location : Path | str = "state.txt", value: datetime =
     update date stored on filesystem on which date script
     was last executed with the current date today
     """
-    print(state_location, value)
     if value is None or not isinstance(value, datetime):
         logger.warning("Invalid Update date provided, skipping update...")
     with open(state_location, 'w') as f:
