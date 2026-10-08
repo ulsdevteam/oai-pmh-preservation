@@ -84,7 +84,8 @@ def load_config(conf_location : str | Path = "config.txt") -> dict:
     defaults = {
         "limit_entries": 5
     }
-    last_run, today = load_last_run()
+    last_run = load_last_run(state_location = "state.txt")
+    today = datetime.now()
     
     with open(conf_location, "rb") as conf_file:
         conf = tomllib.load(conf_file)
@@ -92,14 +93,25 @@ def load_config(conf_location : str | Path = "config.txt") -> dict:
             if k not in conf}
         #last_run, today = None, None
         #if conf.get("fetch_all") == 1:
-        conf["last_run"], conf["today"] = last_run, today
-        print(last_run)
+        if conf.get("mode") is None or conf["mode"] == "harvest": 
+            conf["_from"] = last_run
+            conf["_until"] = conf.get("until", today)
+        elif conf.get("mode") == "fetch":
+            conf["_from"] = conf.get("from", None)
+            conf["_until"] = conf.get("until", None) 
+        
+        if isinstance(conf["_from"], str):
+            conf["_from"] = datetime.fromisoformat(conf["_from"])
+        
+        if isinstance(conf["_until"], str):
+            conf["_until"] = datetime.fromisoformat(conf["_until"])
+        #print(last_run)
         #raise SystemExit(1)
         logging.info(f"conf provided: {conf}")
         logging.info(f"Using defaults: {used_defaults}")
         return defaults | conf
-     
-def load_last_run(state_location : Path | str = "state.txt") -> (datetime.date, datetime.date):
+
+def load_last_run(state_location : Path | str = "state.txt") -> str | datetime | None:
     """
     load date stored on filesystem on which date script
     was last executed, and the current date today
@@ -107,24 +119,27 @@ def load_last_run(state_location : Path | str = "state.txt") -> (datetime.date, 
     try:
         with open(state_location, "r") as stateFile:
             last_run_str = stateFile.read().strip()
-            last_run_date = datetime.strptime(last_run_str, 
-                    "%Y-%m-%d").date()
-            today = date.today()
-            print(last_run_date, last_run_str)
-            return last_run_date, today
+            last_run_date = datetime.fromisoformat(last_run_str)
+            #last_run_date = datetime.strptime(last_run_str, 
+            #        "%Y-%m-%d").date()
+            return last_run_date
             
     except (FileNotFoundError, ValueError):
         log.warn("State file not found or invalid format. " 
             "Defaulting to yesterday.")
-        return None, None
+        return None
     
 
-def update_last_run(state_location : Path | str = "state.txt"):
+def update_last_run(state_location : Path | str = "state.txt", value: datetime = None):
     """
     update date stored on filesystem on which date script
     was last executed with the current date today
     """
-    logging.warn("Not updating for debug")
+    if value is None or not isinstance(value, datetime):
+        logger.warning("Invalid Update date provided, skipping update...")
+    with open(state_location, 'w') as f:
+        f.write(value.isoformat())
+    #logging.warn("Not updating for debug")
     pass
 
 
@@ -173,11 +188,11 @@ def fetch_metadata_records(scythe_client:Scythe, metadata_format:str,
     perform ListRecords OAI verb from last run to today, 
     and grab first config["limit_entries"] results 
     """
-    logger.info(f"{config['last_run']}")
+    logger.info(f"{config['_from']}")
     print(set_)
     records = scythe_client.list_records(
         metadata_prefix = metadata_format,
-        from_ = config["last_run"], until = config["today"], set_ = set_) 
+        from_ = config["_from"], until = config["_until"], set_ = set_) 
     print(next(records))
     # consume iterator skip_count times
     #[None for _ in islice(records, config["skip_count"]) if False] 
@@ -267,7 +282,7 @@ def extract_filename(response):
     filename = os.path.basename(str(response.url))
     return filename
 
-def save_represenation_file(record:OAIItem, metadata_format:str, config:dict):
+def save_representation_file(record:OAIItem, metadata_format:str, config:dict):
     """
     Extract URIs from metadata file in record, fetch files,
     and save results on disk
@@ -305,10 +320,11 @@ def get_identifiers(scythe, set_, config):
     formats = scythe.list_metadata_formats()
     for mformat in formats:
         mprefix = mformat.metadataPrefix
+        print(config["_from"], config["_until"])
         identifier_fetch = scythe.list_identifiers(
                 metadata_prefix = mprefix,
-                from_ = config["last_run"],   
-                until=config["today"], set_ = set_)
+                from_ = config["_from"],   
+                until=config["_until"], set_ = set_)
         identifier_fetch = islice(identifier_fetch,
                              config["limit_entries"])
         for header in identifier_fetch:
@@ -347,6 +363,10 @@ def main():
                     save_metadata_record(record, mprefix, config)
                     if mprefix == config["metadata_format"]:
                         save_representation_file(record, mprefix, config)
+                            
+    if config["mode"] == "harvest":
+        update_last_run(value = config["_until"])
+
 
 
 
