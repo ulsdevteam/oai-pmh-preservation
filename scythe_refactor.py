@@ -304,7 +304,7 @@ def extract_filename(response):
     filename = os.path.basename(str(response.url))
     return filename
 
-def save_metadata_file(record:OAIItem, metadata_format:str, config:dict):
+def save_representation_file(record:OAIItem, metadata_format:str, config:dict):
     """
     Extract URIs from metadata file in record, fetch files,
     and save results on disk
@@ -384,7 +384,7 @@ def new_main():
                                            mprefix)
                     save_metadata_record(record, mprefix, config)
                     if mprefix == config["metadata_format"]:
-                        save_metadata_file(record, mprefix, config)
+                        save_representation_file(record, mprefix, config)
                             
     if config["mode"] == "harvest":
         update_last_run(value = config["_until"])
@@ -414,7 +414,7 @@ def main():
                         config)
                     if meta_format_str == config["metadata_format"]:
                         logger.info("saving metadata files")
-                        save_metadata_file(record, meta_format_str, config)
+                        save_representation_file(record, meta_format_str, config)
                 
     if config["mode"] == "harvest":
         update_last_run(value = config["_until"])
