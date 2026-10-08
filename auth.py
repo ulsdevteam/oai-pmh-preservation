@@ -27,28 +27,7 @@ ConfigData = namedtuple('ConfigData', [
     'gather_header',
     'send_header'
 ])
-
-_conf = ConfigData(
-    login_uri = "https://isapapers.pitt.edu/cgi/users/login",
-    login_uname_el = "//*[@id=\"login_username\"]",
-    login_passwd_el = "//*[@id=\"login_password\"]",
-    login_form_el = "//*[@id=\"login_username\"]/ancestor::r:form",
-    gather_header = "Set-Cookie",
-    send_header = "Cookie"
-)
-
-_conf = ConfigData(
-    login_uri = "https://hyku7-pittir-test-tenant.palni-palci-knapsack-friends.notch8.cloud/users/sign_in?locale=en",
-    login_uname_el = "//*[@id=\"login_username\"]",
-    login_passwd_el = "//*[@id=\"login_password\"]",
-    login_form_el = "//*[@id=\"login_username\"]/ancestor::r:form",
-    gather_header = "Set-Cookie",
-    send_header = "Cookie"
-)
     
-    
-
-
 def login(conf, uname, passwd, basic_auth = None):
     # given xpath to input element get the form field name
     client = None
@@ -72,7 +51,7 @@ def login(conf, uname, passwd, basic_auth = None):
         page.raise_for_status()
     except:
         with open("error.html", "w") as f:
-            print(page.cookies)
+            logging.err("Failed to GET login page. Writing returned html to error.html")
             f.write(content)
             raise SystemExit(1)
     et = etree.fromstring(content, parser=etree.HTMLParser())
@@ -114,6 +93,3 @@ def login(conf, uname, passwd, basic_auth = None):
     return {conf.send_header: post_ret.headers[conf.gather_header]}
     
     
-
-if __name__ == '__main__':
-    print(login(_conf, "pals", "pals"))
