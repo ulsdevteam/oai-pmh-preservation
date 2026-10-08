@@ -206,25 +206,14 @@ def save_metadata_record(record:OAIItem, metadata_format:str, config: dict):
         )
     metadata_file_path = pathjoin(record_path, 
             f"{identifier}.{metadata_format}")  
-    #if not os.path.exists(record_path):
-    #    os.makedirs(record_path)
-    #    identifiers_being_updated.add(identifier)
-    #elif identifier not in identifiers_being_updated:
-    #    print(f"deleting content for {identifier} namely {os.listdir(record_path)}")
-    #    shutil.rmtree(record_path)
-    #    os.makedirs(record_path)
-    #    identifiers_being_updated.add(identifier)
+    
     with open(metadata_file_path, 'w', 
             encoding='utf-8') as f:
         log.info(f"writing file: {metadata_file_path}")
         tmp_tree = etree.fromstring(str(record))
         tmp_tree = tmp_tree.find("ns:metadata", namespaces={'ns': 'http://www.openarchives.org/OAI/2.0/'})
         tmp_tree = tmp_tree[0] # first child
-        # print(f"format: {metadata_format}")
-        # print(etree.tostring(tmp_tree)[:30]) 
-        #if record.metadata:
-        #    print("metadata: ", str(record.metadata)[:10])
-        #print(f"record: {str(record)}")
+        
         f.write(etree.tostring(tmp_tree).decode())  # Save as string for now
     
 
@@ -272,24 +261,13 @@ def extract_filename(response):
     logger.info(f"Content-Disposition value: {hd}")
     if hd is not None:
         filename = pyrfc6266.parse_filename(hd)
-        print(filename)
+        logger.info(filename)
         return filename
-    if hd is not None and "filename" in hd:
-        # RFC 6266 specifies obscure cases for filename in Content-Disposition
-        # httpx parses headers naively and returns key value pairs pairs
-        # rfc6266 and pyrfc6266 provide dedicated parsers but don't have much popularity 
-        # and at risk of going unmaintained
-
-        filename_start = hd.index("filename") + len("filename")
-        filename_start = hd.index("=", filename_start) + 1
-        filename_end = hd.find(";", filename_start) 
-        filename = hd[filename_start:filename_end] 
-        # filename_end = -1 means last char is skipped, which is usually '"' which would be stripped anyway
-        return filename.strip().strip('";')
+    
     filename = os.path.basename(str(response.url))
     return filename
 
-def save_metadata_file(record:OAIItem, metadata_format:str, config:dict):
+def save_represenation_file(record:OAIItem, metadata_format:str, config:dict):
     """
     Extract URIs from metadata file in record, fetch files,
     and save results on disk
@@ -301,7 +279,7 @@ def save_metadata_file(record:OAIItem, metadata_format:str, config:dict):
         os.makedirs(files_folder, exist_ok = True)
     file_uris = extract_file_uris(record, config["fetch_xpath"],
                                   config["fetch_namespaces"])
-    print(file_uris)
+    logger.info(file_uris)
     for uri in file_uris:
         logger.info(f"getting uri {uri}")
         client = get_default_http_client()
@@ -346,7 +324,7 @@ def clear_existing_identifier(identifier, config):
     os.makedirs(path, exist_ok=True)
 
     pass
-def new_main():
+def main():
     config = load_config("test.toml")
     preprocess_config(config)
     with Scythe(config["base_url"]) as scythe:
@@ -368,35 +346,10 @@ def new_main():
                                            mprefix)
                     save_metadata_record(record, mprefix, config)
                     if mprefix == config["metadata_format"]:
-                        save_metadata_file(record, mprefix, config)
+                        save_representation_file(record, mprefix, config)
 
-def main():
-    config = load_config("test.toml")
-    preprocess_config(config)
-    with Scythe(config["base_url"]) as scythe:
-        authenticate_scythe(scythe, config["auth"])
-        set_list = [None]
 
-        if config.get("sets") is not None and len(config.get("sets")) > 0:
-            set_list = config.get("sets")
-        formats = scythe.list_metadata_formats()
-        for set_ in set_list:
-            # sets aren't currently distinguished and stored in the same flat structure
-            for meta_format in formats:
-                meta_format_str = meta_format.metadataPrefix
-                records = fetch_metadata_records(
-                            scythe, 
-                            meta_format_str,
-                            config, set_)
-                print(records)
-                for record in records:
-                    save_metadata_record(record, meta_format_str, 
-                        config)
-                    if meta_format_str == config["metadata_format"]:
-                        logger.info("saving metadata files")
-                        save_metadata_file(record, meta_format_str, config)
-                
 
 
 if __name__ == '__main__':
-    new_main()
+    main()
