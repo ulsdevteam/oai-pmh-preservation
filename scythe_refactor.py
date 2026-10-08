@@ -308,6 +308,12 @@ def save_representation_file(record:OAIItem, metadata_format:str, config:dict):
             continue
         file_name = extract_filename(response)
         file_path = os.path.join(files_folder, file_name)
+        i = 1
+        tmp_path = file_path
+        while os.path.exists(tmp_path):
+            tmp_path = file_path + f"-{i}"
+            i += 1
+        file_path = tmp_path
         with open(file_path, "w") as f:
             logger.info(f"saving {uri} @ {file_path}")
             f.write(response.text)
@@ -339,7 +345,6 @@ def clear_existing_identifier(identifier, config):
         # rmtree could be replaced with moving to a tmp folder which then gets removed on success
     os.makedirs(path, exist_ok=True)
 
-    pass
 def main():
     config = load_config("test.toml")
     preprocess_config(config)
