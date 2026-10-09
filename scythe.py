@@ -311,7 +311,8 @@ def save_representation_file(record:OAIItem, metadata_format:str, config:dict):
         i = 1
         tmp_path = file_path
         while os.path.exists(tmp_path):
-            tmp_path = file_path + f"-{i}"
+            base, ext = os.path.splitext(base)
+            tmp_path = base + f"-{i}" + ext
             i += 1
         file_path = tmp_path
         with open(file_path, "w") as f:
