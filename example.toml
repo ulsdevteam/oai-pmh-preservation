@@ -1,0 +1,78 @@
+# OAI-PMH endpoint url
+# REQUIRED
+#base_url = "https://example.com/OAI/" 
+
+# metadata format which contains file URLs 
+# that contain the data object be harvested metadata refers to
+# REQUIRED
+#metadata_format = "oai_dc"
+
+# xpath that extracts file URLs to be fetched
+# REQUIRED
+#fetch_xpath = ""
+
+# fetch OAI-PMH records associated with the sets. 
+# sets = [] or not specifying variable fetches all records.
+# OPTIONAL
+#sets = ["set1"]
+
+# Directory where files would be fetched to.
+# Read README.md for directory structure information
+# OPTIONAL, default "oaipmh-storage"
+#storage_directory = "oaipmh-storage"
+
+# Skip first n records from the feed.
+# OPTIONAL: Default = 0
+#skip_count = 0
+
+#key = value pairs for aliases for xml namespaces used in fetch_xpath
+# OPTIONAL,
+[fetch_namespaces]
+dc = "http://purl.org/dc/elements/1.1/"
+
+# if there are access restrictions for OAI-PMH endpoint,
+# or there are restrictions for document download endpoint
+# the application can be configured to use an authenticated HTTP/OAI-PMH client
+[auth]
+
+# list of one or more supported login types 
+# supported login types
+# - basic: HTTP basic authentication
+# - cookie: a login form page, where on form submit a cookie can be gathered to be associated with client
+#login_types = ["basic", "cookie"]
+
+# login form page for cookie authentication
+#login_uri = "https://example.com/sign_in"
+
+
+# username and password for basic auth
+[auth.basic]
+#username =
+#password =
+
+[auth.cookie]
+
+#username=<login page username>
+#passowrd=<login page password>
+#form_xpath=<XPATH to form html element>
+#username_xpath=<XPATH to username input html element>
+#password_xpath=<XPATH to password input html element>
+#gather_header=<HTTP header in response that contains auth token value>
+#set_cookie=<HTTP header to set with auth token value>
+
+# config variables to control parameters of generated opex of fetched 
+# content
+[opex]
+#storage_dir = </path/to/oai-pmh/fetch>
+#metadata_format = <metadata format to use as source for opex metadata>
+
+[opex.xpaths]
+#title = <XPATH to value of metadata_format xml to use as opex:Title>
+#description = <XPATH to value of metadata_format xml to use as opex:Description>
+#source_id = <XPATH to value of metadata_format xml to use as opex:SourceId>
+#identifiers = <XPATH to values of metadata_format xml to use as identifier within opex:Identifiers>
+
+
+# namespace aliases used within opex.xpaths as key = "value" pairs
+[opex.ns]
+opex= "http://www.openpreservationexchange.org/opex/v1.2"
