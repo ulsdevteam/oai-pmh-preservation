@@ -282,6 +282,23 @@ def extract_filename(response):
     filename = os.path.basename(str(response.url))
     return filename
 
+def get_web_resource(url) -> (str, str):
+    client  = get_default_http_client()
+    ret_text = None
+    ret_filename = None
+    try:
+        response = client.get(uri)
+        if response.status_code == 429:
+            response = _retry_for_too_many_requests(client, uri)
+        response.raise_for_status()
+        ret_text = response.text
+        ret_filename = extract_filename(response)
+    except Exception as e:
+        ret_text = None
+        ret_filename = None
+        logger.warn(f"failed to get {uri} due to {e}")
+    return ret_text, ret_filename 
+
 def save_representation_file(record:OAIItem, metadata_format:str, config:dict):
     """
     Extract URIs from metadata file in record, fetch files,
@@ -297,16 +314,19 @@ def save_representation_file(record:OAIItem, metadata_format:str, config:dict):
     logger.info(file_uris)
     for uri in file_uris:
         logger.info(f"getting uri {uri}")
-        client = get_default_http_client()
-        try:
-            response = client.get(uri)
-            if response.status_code == 429:
-                response = _retry_for_too_many_requests(client, uri)
-            response.raise_for_status()
-        except Exception as e:
-            logger.warn(f"failed to get {uri} due to {e}")
-            continue
-        file_name = extract_filename(response)
+        uri_type = urlparse(uri).scheme
+        text, file_name = None, None
+        if uri_type in ('http', 'https'):        
+            text, file_name = get_web_resoure(uri)
+            if text is None:
+                continue
+        else:
+            file_name = os.path.basename(uri)
+            uri_path = UPath(uri, storage_options = config[uri_type])
+            if not uri_path.exists():
+                logger.info("skipping {uri} due to upath failing to confirm it's existence")
+                continue
+            text = uri_path.read_text()
         file_path = os.path.join(files_folder, file_name)
         i = 1
         tmp_path = file_path
