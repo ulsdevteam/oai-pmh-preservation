@@ -126,7 +126,7 @@ def load_last_run(state_location : Path | str = "state.txt") -> str | datetime |
             
     except (FileNotFoundError, ValueError):
         log.warn("State file not found or invalid format. " 
-            "Defaulting to yesterday.")
+            "Defaulting to fetching from earliest record.")
         return None
     
 
