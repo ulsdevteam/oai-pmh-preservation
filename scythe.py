@@ -323,7 +323,7 @@ def save_representation_file(record:OAIItem, metadata_format:str, config:dict):
                 continue
         else:
             file_name = os.path.basename(uri)
-            uri_path = UPath(uri, storage_options = config[uri_type])
+            uri_path = UPath(uri, storage_options = config["upath-opts"][uri_type])
             if not uri_path.exists():
                 logger.info("skipping {uri} due to upath failing to confirm it's existence")
                 continue
