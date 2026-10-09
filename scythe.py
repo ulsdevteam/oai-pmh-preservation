@@ -24,6 +24,7 @@ from lxml import etree
 from oaipmh_scythe import Scythe
 import httpx
 import pyrfc6266
+from upath import UPath
 
 #tomllib is inbuilt >=3.11. Use tomlli as fallback
 try:
