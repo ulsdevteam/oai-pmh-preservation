@@ -326,18 +326,18 @@ def save_representation_file(record:OAIItem, metadata_format:str, config:dict):
     
 def get_identifiers(scythe, set_, config):
     identifiers = set()
-    formats = scythe.list_metadata_formats()
-    for mformat in formats:
-        mprefix = mformat.metadataPrefix
-        print(config["_from"], config["_until"])
-        identifier_fetch = scythe.list_identifiers(
+    # OAI-DC is guaranteed to give exhaustive list of formats that match requirement
+    
+    mprefix = "oai_dc"
+    print(config["_from"], config["_until"])
+    identifier_fetch = scythe.list_identifiers(
                 metadata_prefix = mprefix,
                 from_ = config["_from"],   
                 until=config["_until"], set_ = set_)
-        identifier_fetch = islice(identifier_fetch,
+    identifier_fetch = islice(identifier_fetch,
                              config["limit_entries"])
-        for header in identifier_fetch:
-            identifiers.add(header.identifier)
+    for header in identifier_fetch:
+        identifiers.add(header.identifier)
     return identifiers
 
 def clear_existing_identifier(identifier, config):
