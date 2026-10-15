@@ -87,19 +87,37 @@ def create_subfile_opexes(path, files_folder, identifier):
         writer = opex_parser.Writer(os.path.join(files_path, file) + ".opex", is_dir = False, is_pax=False)
         writer.write(stub, fs_content)
 
+def delete_existsing_opex(path):
+    for root, _, file in os.walk(path):
+        if file.endswith("opex"):
+            os.remove(os.path.join(root, file))
+
 if __name__ == '__main__':
     # this is just 10 lines or something right?
     conf = load_config("test.toml")
     lockfile_path = os.path.join(conf["storage_dir"], ".modify_lock")
     if not create_lock_file(lockfile_path):
         raise SystemExit(1)
-    # folder structure := root -> ID -> metadata; files -> objects
+    # folder structure: root -> Representation_Preservation, metadata_files
     try:
         it = os.walk(conf["storage_dir"], topdown=True)
         root, dirs, _ = next(it) # skip root
         for d in dirs:
             identifier = os.path.basename(d)[:-len(".pax")]
             path, folders, files = next(os.walk(os.path.join(root, d)))
+            mark_for_deletion = []
+            # if a folder has no root/metadata_files, this folder has only been processed
+            if len(files) == 0:
+                continue
+            # attempt to create a lock file for identifier
+            # used for recovery in case of failure mid run, with partially written opex
+            if not create_lock_file(os.path.join(path, "GENERATING_OPEX")):
+                # recovery needed, remove all existing opex files in identifier dir since they are in an incomplete state
+                delete_existsing_opex(path)
+                # remove stray GENERATING_OPEX from files
+                files = [f for f in files if f != "GENERATING_OPEX"]
+                # folder is in clean state and opex can be regenerated
+
             metadata_trees = []
             model_var = None
             model_tree = None
@@ -111,9 +129,7 @@ if __name__ == '__main__':
                 if file.endswith(conf["metadata_format"]):
                     model_tree = tree
                 metadata_trees.append(tree)
-                os.remove(file_path)
-
-
+                mark_for_deletion.append(file_path)
                         
             model_var = extract_general_metadata(model_tree, conf, 
                                                      source_id=identifier)
@@ -125,7 +141,10 @@ if __name__ == '__main__':
             create_subfile_opexes(path, "Representation_Preservation", identifier)
         
             write_pax_opex(os.path.join(root, d), model_var)
-        
+
+            release_lock_file(os.path.join(path, "GENERATING_OPEX"))
+            for file_path in mark_for_deletion:
+                os.remove(file_path)
     finally:
         release_lock_file(lockfile_path)
 
