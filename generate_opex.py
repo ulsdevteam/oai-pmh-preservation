@@ -90,7 +90,7 @@ def create_subfile_opexes(path, files_folder, identifier):
 if __name__ == '__main__':
     # this is just 10 lines or something right?
     conf = load_config("test.toml")
-    lockfile_path = os.path.join(conf["storage_dir"], ".modify.lock")
+    lockfile_path = os.path.join(conf["storage_dir"], ".modify_lock")
     if not create_lock_file(lockfile_path):
         raise SystemExit(1)
     # folder structure := root -> ID -> metadata; files -> objects
