@@ -1,4 +1,5 @@
 
+from lock import create_lock_file, release_lock_file
 import lxml
 import lxml.etree as etree
 import opex_parser
@@ -89,37 +90,44 @@ def create_subfile_opexes(path, files_folder, identifier):
 if __name__ == '__main__':
     # this is just 10 lines or something right?
     conf = load_config("test.toml")
-
+    lockfile_path = os.path.join(conf["storage_dir"], ".modify.lock")
+    if not create_lock_file(lockfile_path):
+        raise SystemExit(1)
     # folder structure := root -> ID -> metadata; files -> objects
-    it = os.walk(conf["storage_dir"], topdown=True)
-    root, dirs, _ = next(it) # skip root
-    for d in dirs:
-        identifier = os.path.basename(d)[:-len(".pax")]
-        path, folders, files = next(os.walk(os.path.join(root, d)))
-        metadata_trees = []
-        model_var = None
-        model_tree = None
-        for file in files:
-            if file.endswith("opex"):
-                continue
-            file_path = os.path.join(path, file)
-            tree = etree.parse(os.path.join(path, file))
-            if file.endswith(conf["metadata_format"]):
-                model_tree = tree
-            metadata_trees.append(tree)
-            os.remove(file_path)
-            
-        
-        model_var = extract_general_metadata(model_tree, conf, 
+    try:
+        it = os.walk(conf["storage_dir"], topdown=True)
+        root, dirs, _ = next(it) # skip root
+        for d in dirs:
+            identifier = os.path.basename(d)[:-len(".pax")]
+            path, folders, files = next(os.walk(os.path.join(root, d)))
+            metadata_trees = []
+            model_var = None
+            model_tree = None
+            for file in files:
+                if file.endswith("opex"):
+                    continue
+                file_path = os.path.join(path, file)
+                tree = etree.parse(os.path.join(path, file))
+                if file.endswith(conf["metadata_format"]):
+                    model_tree = tree
+                metadata_trees.append(tree)
+                os.remove(file_path)
+
+
+                        
+            model_var = extract_general_metadata(model_tree, conf, 
                                                      source_id=identifier)
 
         
-        for tree in metadata_trees:
-            model_var.append_descriptive_metadata(tree)
-        print(etree.tostring(model_var.descriptive_metadata))
-        create_subfile_opexes(path, "Representation_Preservation", identifier)
+            for tree in metadata_trees:
+                model_var.append_descriptive_metadata(tree)
+            print(etree.tostring(model_var.descriptive_metadata))
+            create_subfile_opexes(path, "Representation_Preservation", identifier)
         
-        write_pax_opex(os.path.join(root, d), model_var)
+            write_pax_opex(os.path.join(root, d), model_var)
+        
+    finally:
+        release_lock_file(lockfile_path)
 
 
 

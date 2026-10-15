@@ -1,6 +1,7 @@
 
 # local imports
 from auth import ConfigData, login
+from lock import create_lock_file, release_lock_file
 
 # type imports
 from pathlib import Path
@@ -71,6 +72,7 @@ def preprocess_config(config:dict):
             log.warn(f"path {storage_dir} "
                 f"is ambiguous. Using path {abspath}")
         config["storage_directory"] = abspath
+    #config["_lockfile_path"] 
             
 
 def load_config(conf_location : str | Path = "config.txt") -> dict:
@@ -349,30 +351,35 @@ def clear_existing_identifier(identifier, config):
 def main():
     config = load_config("test.toml")
     preprocess_config(config)
-    with Scythe(config["base_url"]) as scythe:
-        authenticate_scythe(scythe, config["auth"])
+    lockfile_path = os.path.join(config["storage_directory"], ".modify_lock")
+    if not create_lock_file(lockfile_path):
+        return
+    try:
+        with Scythe(config["base_url"]) as scythe:
+            authenticate_scythe(scythe, config["auth"])
         
-        set_list = [None]
+            set_list = [None]
 
-        if config.get("sets") is not None and len(config.get("sets")) > 0:
-            set_list = config.get("sets")
-        for set_ in set_list:
-            # list identifiers
-            identifiers = get_identifiers(scythe, set_, config)
-            for identifier in identifiers:
-                clear_existing_identifier(identifier, config)
-                formats = scythe.list_metadata_formats(identifier)
-                for mformat in formats:
-                    mprefix = mformat.metadataPrefix
-                    record = scythe.get_record(identifier, 
+            if config.get("sets") is not None and len(config.get("sets")) > 0:
+                set_list = config.get("sets")
+            for set_ in set_list:
+                # list identifiers
+                identifiers = get_identifiers(scythe, set_, config)
+                for identifier in identifiers:
+                    clear_existing_identifier(identifier, config)
+                    formats = scythe.list_metadata_formats(identifier)
+                    for mformat in formats:
+                        mprefix = mformat.metadataPrefix
+                        record = scythe.get_record(identifier, 
                                            mprefix)
-                    save_metadata_record(record, mprefix, config)
-                    if mprefix == config["metadata_format"]:
-                        save_representation_file(record, mprefix, config)
+                        save_metadata_record(record, mprefix, config)
+                        if mprefix == config["metadata_format"]:
+                            save_representation_file(record, mprefix, config)
                             
-    if config["mode"] == "harvest":
-        update_last_run(value = config["_until"])
-
+        if config["mode"] == "harvest":
+            update_last_run(value = config["_until"])
+    finally:
+        release_lock_file(lockfile_path)
 
 
 
