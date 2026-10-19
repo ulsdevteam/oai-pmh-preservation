@@ -98,6 +98,7 @@ if __name__ == '__main__':
     logging.debug(f"Using conf {conf}")
     lockfile_path = os.path.join(conf["storage_dir"], ".modify_lock")
     if not create_lock_file(lockfile_path):
+        logging.error("Lock File found, another program is currently modifying the directories...")
         raise SystemExit(1)
     # folder structure: root -> Representation_Preservation, metadata_files
     try:

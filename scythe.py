@@ -353,6 +353,7 @@ def main():
     preprocess_config(config)
     lockfile_path = os.path.join(config["storage_directory"], ".modify_lock")
     if not create_lock_file(lockfile_path):
+        logging.error("Lock File found, another program is currently modifying the directories...")
         return
     try:
         with Scythe(config["base_url"]) as scythe:

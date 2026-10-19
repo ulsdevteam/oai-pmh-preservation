@@ -8,7 +8,6 @@ def create_lock_file(path):
         os.close(fd)
         return True
     except OSError:
-        logging.error("Lock File found, another program is currently modifying the directories...")
         return False
 
 
