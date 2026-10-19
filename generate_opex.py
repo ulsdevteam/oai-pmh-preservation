@@ -137,7 +137,7 @@ if __name__ == '__main__':
         
             for tree in metadata_trees:
                 model_var.append_descriptive_metadata(tree)
-            print(etree.tostring(model_var.descriptive_metadata))
+            
             create_subfile_opexes(path, "Representation_Preservation", identifier)
         
             write_pax_opex(os.path.join(root, d), model_var)
