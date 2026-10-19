@@ -177,7 +177,7 @@ def authenticate_scythe(client: Scythe, config:dict) -> Scythe:
             )
             login_headers = login(auth_conf, config["cookie"]["username"],
                                         config["cookie"]["password"], basic_auth = basic_auth_var)
-            print(login_headers)
+            logging.info(login_headers)
             client.client.headers.update(login_headers)
     global request_client
     if request_client is None:
@@ -191,11 +191,11 @@ def fetch_metadata_records(scythe_client:Scythe, metadata_format:str,
     and grab first config["limit_entries"] results 
     """
     logger.info(f"{config['_from']}")
-    print(set_)
+    
     records = scythe_client.list_records(
         metadata_prefix = metadata_format,
         from_ = config["_from"], until = config["_until"], set_ = set_) 
-    print(next(records))
+    
     # consume iterator skip_count times
     #[None for _ in islice(records, config["skip_count"]) if False] 
     records = islice(records, config["limit_entries"])
@@ -247,7 +247,7 @@ def extract_file_uris(record_xml: str | bytes, xpath_expr:str, ns_dict:str) -> l
     """
     tree = etree.XML(str(record_xml))
     logger.debug(ns_dict)
-    print(xpath_expr)
+    logger.debug(xpath_expr)
     vals = tree.xpath(xpath_expr, namespaces=ns_dict)
     logger.debug(vals, [is_valid_url(x) for x in vals])
     return list(filter(is_valid_url, tree.xpath(xpath_expr, namespaces=ns_dict)))  
@@ -329,7 +329,7 @@ def get_identifiers(scythe, set_, config):
     # OAI-DC is guaranteed to give exhaustive list of formats that match requirement
     
     mprefix = "oai_dc"
-    print(config["_from"], config["_until"])
+    logger.info(config["_from"], config["_until"])
     identifier_fetch = scythe.list_identifiers(
                 metadata_prefix = mprefix,
                 from_ = config["_from"],   

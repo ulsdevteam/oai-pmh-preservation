@@ -95,6 +95,7 @@ def delete_existsing_opex(path):
 if __name__ == '__main__':
     # this is just 10 lines or something right?
     conf = load_config("test.toml")
+    logging.debug(f"Using conf {conf}")
     lockfile_path = os.path.join(conf["storage_dir"], ".modify_lock")
     if not create_lock_file(lockfile_path):
         raise SystemExit(1)
@@ -152,7 +153,7 @@ if __name__ == '__main__':
 
 
     
-    print(conf)
+   
 
 
     
