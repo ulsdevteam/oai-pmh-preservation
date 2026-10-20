@@ -83,9 +83,7 @@ def load_config(conf_location : str | Path = "config.txt") -> dict:
     Note: namespaces is a table in config toml and gets translated
         as a dictionary which is desired behavior
     """
-    defaults = {
-        "limit_entries": 5
-    }
+    defaults = dict()
     last_run = load_last_run(state_location = "state.txt")
     today = datetime.now()
     
@@ -200,7 +198,8 @@ def fetch_metadata_records(scythe_client:Scythe, metadata_format:str,
     
     # consume iterator skip_count times
     #[None for _ in islice(records, config["skip_count"]) if False] 
-    records = islice(records, config["limit_entries"])
+    if config.get("limit_entries") is not None or config["limit_entries"] == 0:
+        records = islice(records, config["limit_entries"])
     return records
   
 
