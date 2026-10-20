@@ -176,7 +176,9 @@ def authenticate_scythe(client: Scythe, config:dict) -> Scythe:
                 send_header = "Cookie"
             )
             login_headers = login(auth_conf, config["cookie"]["username"],
-                                        config["cookie"]["password"], basic_auth = basic_auth_var)
+                                        config["cookie"]["password"], 
+                                        basic_auth = basic_auth_var,
+                                        error_file_path = config.get("http_error_output"))
             logging.info(login_headers)
             client.client.headers.update(login_headers)
     global request_client
@@ -325,6 +327,15 @@ def save_representation_file(record:OAIItem, metadata_format:str, config:dict):
 
     
 def get_identifiers(scythe, set_, config):
+    """
+    Do a "GetIdentifiers" request using using config parameters,
+    (as well as parameters derived from config). 
+
+    Parameters:
+    scythe: Scythe object
+    set_: Optional "set=" query parameter to constrain identifiers by OAI-PMH set
+    config:  
+    """
     identifiers = set()
     # OAI-DC is guaranteed to give exhaustive list of formats that match requirement
     

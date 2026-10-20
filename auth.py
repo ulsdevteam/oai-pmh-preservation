@@ -28,8 +28,10 @@ ConfigData = namedtuple('ConfigData', [
     'send_header'
 ])
     
-def login(conf, uname, passwd, basic_auth = None):
+def login(conf, uname, passwd, basic_auth = None, error_file_path = None):
     # given xpath to input element get the form field name
+    if error_file_path is None:
+        error_file_path = "error.html"
     client = None
     if client is None:
         client = httpx.Client(auth = basic_auth)
@@ -50,7 +52,7 @@ def login(conf, uname, passwd, basic_auth = None):
     try:
         page.raise_for_status()
     except:
-        with open("error.html", "w") as f:
+        with open(error_file_path, "w") as f:
             logging.err("Failed to GET login page. Writing returned html to error.html")
             f.write(content)
             raise SystemExit(1)
