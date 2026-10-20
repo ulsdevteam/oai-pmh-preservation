@@ -19,7 +19,8 @@ httpx==0.28.1
 requests==2.32.3
 truststore==0.10.1
 oaipmh_scythe==0.13.0
-opex-manifest-generator
+lxml
+pyrfc6266
 tomlli
 ```
 2. Install preservica-opex-parser
@@ -34,7 +35,7 @@ cd ..
 
 1. setup `config.txt` (See `example.toml` for reference)
 
-2. `python scythe_refactor.py` to fetch metadata and file contents
+2. `python scythe.py` to fetch metadata and file contents
 
 3. `python generate_opex.py` to converted metadata and content fetch into opex package
 
