@@ -57,9 +57,9 @@ def login(conf, uname, passwd, basic_auth = None):
     et = etree.fromstring(content, parser=etree.HTMLParser())
     submit_dict = {}
     try:
-        print(uname_xpath)
+        logging.debug(uname_xpath)
         uname_form_name = et.xpath(uname_xpath)[0]
-        print(uname_form_name)
+        logging.debug(uname_form_name)
         passwd_form_name = et.xpath(passwd_xpath)[0]
     #form_action_uri = et.xpath(form_action_xpath, 
     #    namespaces={'r': et.xpath("namespace-uri()")})[0]
@@ -68,15 +68,15 @@ def login(conf, uname, passwd, basic_auth = None):
         input_elements = form_element.xpath("./input")
         
         for i in input_elements:
-            print("looking at element:", i.get("id"))
+            logging.debug("looking at element:", i.get("id"))
             submit_dict[i.get("name")] = i.get("value")
         
         submit_dict |= {uname_form_name: uname, passwd_form_name: passwd}
 
     except Exception as e:
-        print(e)
-        print("Xpath applications failed")
-        raise SystemExit(1)
+        logging.error(e)
+        logging.error("Xpath applications failed")
+        raise e
 
     logging.info(f"form action uri used: {form_action_uri}") 
     post_ret = (
