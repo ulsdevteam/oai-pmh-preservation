@@ -176,7 +176,7 @@ def authenticate_scythe(client: Scythe, config:dict) -> Scythe:
             login_headers = login(auth_conf, config["cookie"]["username"],
                                         config["cookie"]["password"], 
                                         basic_auth = basic_auth_var,
-                                        error_file_path = config.get("http_error_output"))
+                                        error_file_path = config["auth"].get("http_error_output"))
             logging.info(login_headers)
             client.client.headers.update(login_headers)
     global request_client
