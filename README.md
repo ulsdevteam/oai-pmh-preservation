@@ -58,26 +58,31 @@ For authentication, one or more of the following are supported
     2.4: A header specified by the config (eg. "Set-Cookie") of the response is extracted. 
     2.5: The value extracted by previous step is set as a config provided field (eg. "Cookie") in the fetching HTTP client
 
-Once the HTTP client is sufficiently authenticated, the OAI-PMH endpoint is polled for records between last run date (as stored in state.txt)
-and today. The corresponding query looks something similar to as follows
+Once the HTTP client is sufficiently authenticated, the OAI-PMH endpoint is polled for identifiers between last run date (as stored in state.txt) and the current time (or `until`, if specified in config) using a GetIdentifers query. In fetch mode, the identifiers are fetched between the `from` and `until` parameters of config (If `from` or `until` are unspecified, the query parameters are not passed to the OAI-PMH query)
+The corresponding query looks something similar to as follows
 
 ```
-GET https://<OAI-PMH endpoint>/?verb=ListRecords&metadataPrefix=<loop variable>&from=<last_run_date>&until=<today>
+GET https://<OAI-PMH endpoint>/?verb=ListIdentifierss&metadataPrefix=oai_dc&from=<last_run_date>&until=<today>
 ```
 
-`loop variable` in the above refers to the fact that the following logic is repeated for every metadata format made available by the endpoint.
+`oai_dc` is the metadataPrefix in the GetIdentifiers as all OAI-PMH records are required by standard to expose an
+`oai_dc` metadata format.
 
-If no `state.txt` is present in the filesystem, the from field is not added to the query parameters, and thus all records before `today` are fetched.
+In harvest mode, if no `state.txt` is present in the filesystem, the from field is not added to the query parameters, and thus all records before `today` are fetched.
 
-For each record that appears as a response to the OAI-PMH query
-1. The record XML (i.e. XML metadata) is saved within the filesystem, in the path `<storage_directory>/<identifier>.pax/<identifier>.<metadataPrefix>`, where
+A `set_list` config parameter can be set, if it is desired that harvesting occur only from particular sets. In this case,
+the set list is iterated through and identifiers from each set specified are processed.
+
+For each identifier that appears as a response to the OAI-PMH query
+1. For each format in a `ListMetadataFormats` query, a GetRecord query is called with query parmaeters Identifier, and MetadataPrefix set
+2. The record XML (i.e. XML metadata) is saved within the filesystem, in the path `<storage_directory>/<identifier>.pax/<identifier>.<metadataPrefix>`, where
   - `storage_directory` is a config provided path
   - `identifier` is the OAI-PMH identifier for the record
   - `metadataPrefix` is the current metadata format being harvested
 
-2. Web URLs representing the content the metadata is annotating are extracted from the metadata XML using a config provided XPATH 
+3. Web URLs representing the content the metadata is annotating are extracted from the metadata XML using a config provided XPATH 
 
-3. The URL is fetched and stored in the same `identifier.pax` folder
+4. The URL is fetched and stored in the same `identifier.pax` folder
 
 Note that URL extraction only occours for a single config specified metadata format
 
