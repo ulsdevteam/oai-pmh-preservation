@@ -5,9 +5,11 @@ import lxml.etree as etree
 import opex_parser
 import os
 import tomllib as toml
+
 def load_config(conf_path):
-    # should be some table within conf.toml
-    # but currently returning a default dict for testing
+    """
+    Load and preprocess config. See example.toml for config details. 
+    """
 
     default = {
         "storage_dir": "oaipmh-storage",
@@ -32,8 +34,14 @@ def load_config(conf_path):
 
 
 def write_pax_opex(pax_path, general_metadata):
+    """
+    Wrapper to opex_writer.write, with Descriptive Metadata from `general_metadata`
+    and filesystem metadata extracted from pax_path directory. 
+
+    In context, this is used to create identifier.pax.opex using metadata from general_metadata
+    and filesystem metadata from folder.
+    """
     d = os.path.basename(pax_path)
-    print(d)
     parent = os.path.dirname(pax_path)
     # create pax opex
     fs_content = opex_parser.model.OpexPaxContent.from_fs(
@@ -43,7 +51,10 @@ def write_pax_opex(pax_path, general_metadata):
     writer.write(general_metadata, fs_content)
     
 def extract_general_metadata(tree, conf, source_id):
-    # extract title
+    """
+    Apply xpaths in dictionary `conf` to specified lxml etree `tree`
+    to extract relevant fields from tree and return a corresponding OpexMetadataContent object
+    """
     metadata_dict = {}
     single_items = ["title", "description", "source_id",
                     "security_descriptor"]
@@ -67,7 +78,10 @@ def extract_general_metadata(tree, conf, source_id):
     return model_var
 
 def create_subfile_opexes(path, files_folder, identifier):
-    print(path, files_folder)
+    """
+    Create an opex for each file within the pax folder
+    """
+    #print(path, files_folder)
     if not os.path.exists(os.path.join(path, files_folder)):
         print(f"no artifacts found in {os.path.join(path, files_folder)}")
         return 
@@ -88,12 +102,33 @@ def create_subfile_opexes(path, files_folder, identifier):
         writer.write(stub, fs_content)
 
 def delete_existsing_opex(path):
+    """
+    Recursively find opex files within directory at `path` and remove them.
+    """
     for root, _, file in os.walk(path):
         if file.endswith("opex"):
             os.remove(os.path.join(root, file))
 
 if __name__ == '__main__':
-    # this is just 10 lines or something right?
+    """
+    Main loop
+    For each of the identifier folders in `conf["storage_dir"]`, create the following
+    - identifier.pax.opex (call to write_pax_opex)
+    - file.opex for each internal file in identifier.pax folder (call to create_subfile_opexes).
+
+    Metadata is extracted from metadata file identifier.pax/identifier.{format} where format is conf["metadata_format"]
+    and used to populate identifier.pax.opex, using xpaths from conf
+
+    All metadata files in `identifier.pax` folder are added to descriptive metadata of generated 
+    identifier.pax.opex.
+
+    Additional features are:
+    - Concurrency control: A lock file checks if scythe.py or another instance of generate_opex.py are modifying
+      the conf["storage_dir"]. If so, script exits to prevent conflict.
+    - Accumulative: Skips any idenitifer.pax directory that has already been processed
+    - Error Recovery: If a generate_opex.py run ends prematurely with an error, the opex files for the identifier
+      that was being edited when script failed are regenerated.
+    """
     conf = load_config("test.toml")
     logging.debug(f"Using conf {conf}")
     lockfile_path = os.path.join(conf["storage_dir"], ".modify_lock")
