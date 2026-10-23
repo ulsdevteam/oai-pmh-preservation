@@ -1,5 +1,0 @@
-base_url=https://pittir.hykucommons.org/catalog/oai
-metadata_format=oai_dc
-xpath=//dc:identifier[starts-with(text(), 'http')]
-storage_directory=oaipmh-storage
-
