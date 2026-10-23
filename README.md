@@ -33,7 +33,7 @@ cd ..
 
 ## Quick Start
 
-1. setup `config.txt` (See `example.toml` for reference)
+1. setup `config.toml` (See `example.toml` for reference)
 
 2. `python scythe.py` to fetch metadata and file contents
 

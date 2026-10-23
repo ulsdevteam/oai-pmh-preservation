@@ -359,7 +359,7 @@ def clear_existing_identifier(identifier, config):
     os.makedirs(path, exist_ok=True)
 
 def main():
-    config = load_config("test.toml")
+    config = load_config("config.toml")
     preprocess_config(config)
     lockfile_path = os.path.join(config["storage_directory"], ".modify_lock")
     if not create_lock_file(lockfile_path):

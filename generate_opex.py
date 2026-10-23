@@ -129,7 +129,7 @@ if __name__ == '__main__':
     - Error Recovery: If a generate_opex.py run ends prematurely with an error, the opex files for the identifier
       that was being edited when script failed are regenerated.
     """
-    conf = load_config("test.toml")
+    conf = load_config("config.toml")
     logging.debug(f"Using conf {conf}")
     lockfile_path = os.path.join(conf["storage_dir"], ".modify_lock")
     if not create_lock_file(lockfile_path):
