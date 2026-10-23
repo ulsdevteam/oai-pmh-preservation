@@ -25,6 +25,10 @@
 # OPTIONAL: Default = 0
 #skip_count = 0
 
+# Limit maximum number of records fetched per run. Partial harvests are recommended 
+# only for debug purposes
+#limit_entries = 0
+
 #key = value pairs for aliases for xml namespaces used in fetch_xpath
 # OPTIONAL,
 [fetch_namespaces]
@@ -44,6 +48,8 @@ dc = "http://purl.org/dc/elements/1.1/"
 # login form page for cookie authentication
 #login_uri = "https://example.com/sign_in"
 
+# Path where failed HTTP output details should be emitted
+#http_error_output = "error.html"
 
 # username and password for basic auth
 [auth.basic]

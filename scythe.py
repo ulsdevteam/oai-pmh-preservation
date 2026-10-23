@@ -1,6 +1,7 @@
 
 # local imports
 from auth import ConfigData, login
+from lock import create_lock_file, release_lock_file
 
 # type imports
 from pathlib import Path
@@ -72,6 +73,7 @@ def preprocess_config(config:dict):
             log.warn(f"path {storage_dir} "
                 f"is ambiguous. Using path {abspath}")
         config["storage_directory"] = abspath
+    #config["_lockfile_path"] 
             
 
 def load_config(conf_location : str | Path = "config.txt") -> dict:
@@ -82,9 +84,7 @@ def load_config(conf_location : str | Path = "config.txt") -> dict:
     Note: namespaces is a table in config toml and gets translated
         as a dictionary which is desired behavior
     """
-    defaults = {
-        "limit_entries": 5
-    }
+    defaults = dict()
     last_run = load_last_run(state_location = "state.txt")
     today = datetime.now()
     
@@ -175,8 +175,10 @@ def authenticate_scythe(client: Scythe, config:dict) -> Scythe:
                 send_header = "Cookie"
             )
             login_headers = login(auth_conf, config["cookie"]["username"],
-                                        config["cookie"]["password"], basic_auth = basic_auth_var)
-            print(login_headers)
+                                        config["cookie"]["password"], 
+                                        basic_auth = basic_auth_var,
+                                        error_file_path = config["auth"].get("http_error_output"))
+            logging.info(login_headers)
             client.client.headers.update(login_headers)
     global request_client
     if request_client is None:
@@ -190,14 +192,15 @@ def fetch_metadata_records(scythe_client:Scythe, metadata_format:str,
     and grab first config["limit_entries"] results 
     """
     logger.info(f"{config['_from']}")
-    print(set_)
+    
     records = scythe_client.list_records(
         metadata_prefix = metadata_format,
         from_ = config["_from"], until = config["_until"], set_ = set_) 
-    print(next(records))
+    
     # consume iterator skip_count times
     #[None for _ in islice(records, config["skip_count"]) if False] 
-    records = islice(records, config["limit_entries"])
+    if config.get("limit_entries") is not None or config["limit_entries"] == 0:
+        records = islice(records, config["limit_entries"])
     return records
   
 
@@ -246,7 +249,7 @@ def extract_file_uris(record_xml: str | bytes, xpath_expr:str, ns_dict:str) -> l
     """
     tree = etree.XML(str(record_xml))
     logger.debug(ns_dict)
-    print(xpath_expr)
+    logger.debug(xpath_expr)
     vals = tree.xpath(xpath_expr, namespaces=ns_dict)
     logger.debug(vals, [is_valid_url(x) for x in vals])
     return list(filter(is_valid_url, tree.xpath(xpath_expr, namespaces=ns_dict)))  
@@ -344,19 +347,28 @@ def save_representation_file(record:OAIItem, metadata_format:str, config:dict):
 
     
 def get_identifiers(scythe, set_, config):
+    """
+    Do a "GetIdentifiers" request using using config parameters,
+    (as well as parameters derived from config). 
+
+    Parameters:
+    scythe: Scythe object
+    set_: Optional "set=" query parameter to constrain identifiers by OAI-PMH set
+    config:  
+    """
     identifiers = set()
-    formats = scythe.list_metadata_formats()
-    for mformat in formats:
-        mprefix = mformat.metadataPrefix
-        print(config["_from"], config["_until"])
-        identifier_fetch = scythe.list_identifiers(
+    # OAI-DC is guaranteed to give exhaustive list of formats that match requirement
+    
+    mprefix = "oai_dc"
+    logger.info(config["_from"], config["_until"])
+    identifier_fetch = scythe.list_identifiers(
                 metadata_prefix = mprefix,
                 from_ = config["_from"],   
                 until=config["_until"], set_ = set_)
-        identifier_fetch = islice(identifier_fetch,
+    identifier_fetch = islice(identifier_fetch,
                              config["limit_entries"])
-        for header in identifier_fetch:
-            identifiers.add(header.identifier)
+    for header in identifier_fetch:
+        identifiers.add(header.identifier)
     return identifiers
 
 def clear_existing_identifier(identifier, config):
@@ -368,32 +380,38 @@ def clear_existing_identifier(identifier, config):
     os.makedirs(path, exist_ok=True)
 
 def main():
-    config = load_config("test.toml")
+    config = load_config("config.toml")
     preprocess_config(config)
-    with Scythe(config["base_url"]) as scythe:
-        authenticate_scythe(scythe, config["auth"])
+    lockfile_path = os.path.join(config["storage_directory"], ".modify_lock")
+    if not create_lock_file(lockfile_path):
+        logging.error("Lock File found, another program is currently modifying the directories...")
+        return
+    try:
+        with Scythe(config["base_url"]) as scythe:
+            authenticate_scythe(scythe, config["auth"])
         
-        set_list = [None]
+            set_list = [None]
 
-        if config.get("sets") is not None and len(config.get("sets")) > 0:
-            set_list = config.get("sets")
-        for set_ in set_list:
-            # list identifiers
-            identifiers = get_identifiers(scythe, set_, config)
-            for identifier in identifiers:
-                clear_existing_identifier(identifier, config)
-                formats = scythe.list_metadata_formats(identifier)
-                for mformat in formats:
-                    mprefix = mformat.metadataPrefix
-                    record = scythe.get_record(identifier, 
+            if config.get("sets") is not None and len(config.get("sets")) > 0:
+                set_list = config.get("sets")
+            for set_ in set_list:
+                # list identifiers
+                identifiers = get_identifiers(scythe, set_, config)
+                for identifier in identifiers:
+                    clear_existing_identifier(identifier, config)
+                    formats = scythe.list_metadata_formats(identifier)
+                    for mformat in formats:
+                        mprefix = mformat.metadataPrefix
+                        record = scythe.get_record(identifier, 
                                            mprefix)
-                    save_metadata_record(record, mprefix, config)
-                    if mprefix == config["metadata_format"]:
-                        save_representation_file(record, mprefix, config)
+                        save_metadata_record(record, mprefix, config)
+                        if mprefix == config["metadata_format"]:
+                            save_representation_file(record, mprefix, config)
                             
-    if config["mode"] == "harvest":
-        update_last_run(value = config["_until"])
-
+        if config["mode"] == "harvest":
+            update_last_run(value = config["_until"])
+    finally:
+        release_lock_file(lockfile_path)
 
 
 
