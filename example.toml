@@ -66,6 +66,17 @@ dc = "http://purl.org/dc/elements/1.1/"
 #gather_header=<HTTP header in response that contains auth token value>
 #set_cookie=<HTTP header to set with auth token value>
 
+# If a protocol other than http or https is used for URI, such as file:// or s3://,
+#   UPath is used to read resource. See universal pathlib documentation for details.
+# If URI starts with x:// then [upath-opts.x] subtable will be the options dictionary passed to upath
+[upath-opts]
+
+# config options for when uri starts with s3://...
+[upath-opts.s3]
+
+# config options for when uri starts with sftp://...
+[upath-opts.sftp]
+
 # config variables to control parameters of generated opex of fetched 
 # content
 [opex]
