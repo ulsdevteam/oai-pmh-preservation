@@ -19,10 +19,11 @@ import logging
 import sys
 from collections import defaultdict
 import shutil
+from functools import partial
 
 # library imports
 from lxml import etree
-from oaipmh_scythe import Scythe
+from oaipmh_scythe import Scythe, IdDoesNotExist
 import httpx
 import pyrfc6266
 from upath import UPath
@@ -177,7 +178,7 @@ def authenticate_scythe(client: Scythe, config:dict) -> Scythe:
             login_headers = login(auth_conf, config["cookie"]["username"],
                                         config["cookie"]["password"], 
                                         basic_auth = basic_auth_var,
-                                        error_file_path = config["auth"].get("http_error_output"))
+                                        error_file_path = config.get("http_error_output"))
             logging.info(login_headers)
             client.client.headers.update(login_headers)
     global request_client
@@ -286,7 +287,7 @@ def extract_filename(response):
     filename = os.path.basename(str(response.url))
     return filename
 
-def get_web_resource(url) -> (str, str):
+def get_web_resource(uri) -> (str, str):
     client  = get_default_http_client()
     ret_text = None
     ret_filename = None
@@ -321,7 +322,7 @@ def save_representation_file(record:OAIItem, metadata_format:str, config:dict):
         uri_type = urlparse(uri).scheme
         text, file_name = None, None
         if uri_type in ('http', 'https'):        
-            text, file_name = get_web_resoure(uri)
+            text, file_name = get_web_resource(uri)
             if text is None:
                 continue
         else:
@@ -341,7 +342,7 @@ def save_representation_file(record:OAIItem, metadata_format:str, config:dict):
         file_path = tmp_path
         with open(file_path, "w") as f:
             logger.info(f"saving {uri} @ {file_path}")
-            f.write(response.text)
+            f.write(text)
         
 
 
@@ -379,6 +380,24 @@ def clear_existing_identifier(identifier, config):
         # rmtree could be replaced with moving to a tmp folder which then gets removed on success
     os.makedirs(path, exist_ok=True)
 
+def repeat_if_failed(callable, timeout, skip_error = None):
+    # code has to be repeated because no valid default value 
+    class DummyException(Exception):
+        pass
+
+    if skip_error is None:
+        skip_error = DummyException    
+    while True:
+        try:
+            return callable()
+        except skip_error:
+            return skip_error # DummyException never raised and so never returned
+        except Exception as e:
+            logger.warning(f"Encountered {e}")
+            logger.warning(f"Waiting for {timeout} seconds")
+            time.sleep(timeout)
+            timeout *= 1.5
+
 def main():
     config = load_config("config.toml")
     preprocess_config(config)
@@ -397,13 +416,17 @@ def main():
             for set_ in set_list:
                 # list identifiers
                 identifiers = get_identifiers(scythe, set_, config)
+                formats = list(scythe.list_metadata_formats())
                 for identifier in identifiers:
                     clear_existing_identifier(identifier, config)
-                    formats = scythe.list_metadata_formats(identifier)
+                    #formats = repeat_if_failed(partial(scythe.list_metadata_formats, identifier), 1)
                     for mformat in formats:
                         mprefix = mformat.metadataPrefix
-                        record = scythe.get_record(identifier, 
-                                           mprefix)
+                        record = repeat_if_failed(partial(scythe.get_record, identifier, mprefix), 1, IdDoesNotExist)
+                        if isinstance(record, Exception):
+                            logger.warning(f"Skipping metadata format {mformat} for {identifier} due to {record}")
+                            continue
+
                         save_metadata_record(record, mprefix, config)
                         if mprefix == config["metadata_format"]:
                             save_representation_file(record, mprefix, config)
