@@ -261,7 +261,8 @@ def extract_file_uris(record_xml: str | bytes, xpath_expr:str, ns_dict:str) -> l
     logger.debug(ns_dict)
     logger.debug(xpath_expr)
     vals = tree.xpath(xpath_expr, namespaces=ns_dict)
-    logger.debug(vals, [is_valid_url(x) for x in vals])
+    logger.debug(vals)
+    logger.debug([is_valid_url(x) for x in vals])
     return list(filter(is_valid_url, tree.xpath(xpath_expr, namespaces=ns_dict)))  
 
 def get_default_http_client():
