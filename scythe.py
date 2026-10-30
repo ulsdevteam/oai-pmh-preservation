@@ -186,6 +186,7 @@ def authenticate_scythe(client: Scythe, config:dict) -> Scythe:
         and response is set as header
     """ 
     basic_auth_var = None
+    login_headers = None
     if "basic" in config["login_types"]:
         basic_auth_var = httpx.BasicAuth(
                                     config["basic"]["username"], 
@@ -212,7 +213,11 @@ def authenticate_scythe(client: Scythe, config:dict) -> Scythe:
             client.client.headers.update(login_headers)
     global request_client
     if request_client is None:
-        request_client = client.client # use the same client
+        request_client = httpx.Client()
+        request_client.auth = client.client.auth # for basic auth
+        if login_headers is not None:
+            request_client.headers.update(login_headers)
+
     return client
 
 def fetch_metadata_records(scythe_client:Scythe, metadata_format:str,
@@ -340,7 +345,7 @@ def get_web_resource(uri) -> (str, str):
     except Exception as e:
         ret_text = None
         ret_filename = None
-        logger.warn(f"failed to get {uri} due to {e}")
+        logger.warning(f"failed to get {uri} due to {e}")
     return ret_text, ret_filename 
 
 def save_representation_file(record:OAIItem, metadata_format:str, config:dict):
@@ -379,7 +384,7 @@ def save_representation_file(record:OAIItem, metadata_format:str, config:dict):
         i = 1
         tmp_path = file_path
         while os.path.exists(tmp_path):
-            base, ext = os.path.splitext(base)
+            base, ext = os.path.splitext(tmp_path)
             tmp_path = base + f"-{i}" + ext
             i += 1
         file_path = tmp_path
