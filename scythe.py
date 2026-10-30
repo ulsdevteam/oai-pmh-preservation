@@ -240,7 +240,7 @@ def save_metadata_record(record:OAIItem, metadata_format:str, config: dict):
         log.info(f"writing file: {metadata_file_path}")
         tmp_tree = etree.fromstring(str(record))
         tmp_tree = tmp_tree.find("ns:metadata", namespaces={'ns': 'http://www.openarchives.org/OAI/2.0/'})
-        if len(tmp_tree) > 0:
+        if tmp_tree is not None and len(tmp_tree) > 0:
             tmp_tree = tmp_tree[0] # first child
             f.write(etree.tostring(tmp_tree).decode())  # Save as string for now
         else:
@@ -376,7 +376,7 @@ def get_identifiers(scythe, set_, config):
                 metadata_prefix = mprefix,
                 from_ = config["_from"],   
                 until=config["_until"], set_ = set_)
-    if config.get("limit_entries") is not None and config.get("limit_en/tries") != 0:
+    if config.get("limit_entries") is not None and config.get("limit_entries") != 0:
         identifier_fetch = islice(identifier_fetch, config["limit_entries"])
     
     for header in identifier_fetch:
