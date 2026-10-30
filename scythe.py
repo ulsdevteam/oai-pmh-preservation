@@ -443,7 +443,8 @@ def main():
         return
     try:
         with Scythe(config["base_url"]) as scythe:
-            authenticate_scythe(scythe, config["auth"])
+            if config.get("auth") is not None:
+                authenticate_scythe(scythe, config["auth"])
         
             set_list = [None]
 
