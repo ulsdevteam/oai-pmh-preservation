@@ -104,22 +104,23 @@ def load_config(conf_location : str | Path = "config.txt") -> dict:
     Note: namespaces is a table in config toml and gets translated
         as a dictionary which is desired behavior
     """
-    defaults = dict()
+    defaults = {"mode": "harvest", "log_level": "WARNING"}
     last_run = load_last_run(state_location = "state.txt")
     today = datetime.now()
-    
+    required = {"base_url", "metadata_format", "fetch_xpath"}
+
     with open(conf_location, "rb") as conf_file:
         conf = tomllib.load(conf_file)
         used_defaults = {(k,v) for k, v in defaults.items()
             if k not in conf}
         #last_run, today = None, None
         #if conf.get("fetch_all") == 1:
-        if conf.get("mode") is None or conf["mode"] == "harvest": 
+        if conf.get("mode") is None or conf["mode"] == "harvest":
             conf["_from"] = last_run
             conf["_until"] = conf.get("until", today)
         elif conf.get("mode") == "fetch":
             conf["_from"] = conf.get("from", None)
-            conf["_until"] = conf.get("until", None) 
+            conf["_until"] = conf.get("until", None)
         
         if isinstance(conf["_from"], str):
             conf["_from"] = datetime.fromisoformat(conf["_from"])
@@ -128,16 +129,18 @@ def load_config(conf_location : str | Path = "config.txt") -> dict:
             conf["_until"] = datetime.fromisoformat(conf["_until"])
         #print(last_run)
         #raise SystemExit(1)
-        if conf.get("log_level") is not None:
-            logging.basicConfig(level=log_level) 
-        else:
-            logging.basicConfig(level=logging.WARNING)
+        if not all(x in conf for x in required):
+            raise Exception(f"Missing parameters: {required - set(conf.keys())}")
+        
+        full_conf = defaults | conf
+
+        logging.basicConfig(level=full_conf["log_level"])
         global logger, log # mostly for annotation purposes
         logger = logging.getLogger(__name__)
         log = logger
         logging.info(f"conf provided: {conf}")
         logging.info(f"Using defaults: {used_defaults}")
-        return defaults | conf
+        return full_conf
 
 def load_last_run(state_location : Path | str = "state.txt") -> str | datetime | None:
     """
