@@ -89,7 +89,7 @@ def preprocess_config(config:dict):
             
     abspath = os.path.abspath(config["storage_directory"])
     if abspath != storage_dir:
-        log.warn(f"path {storage_dir} "
+        log.warning(f"path {storage_dir} "
                 f"is ambiguous. Using path {abspath}")
     config["storage_directory"] = abspath
     if not os.path.exists(abspath):
@@ -147,7 +147,7 @@ def load_last_run(state_location : Path | str = "state.txt") -> str | datetime |
             return last_run_date
             
     except (FileNotFoundError, ValueError):
-        log.warn("State file not found or invalid format. " 
+        log.warning("State file not found or invalid format. " 
             "Defaulting to fetching from earliest record.")
         return None
     
@@ -274,10 +274,13 @@ def extract_file_uris(record_xml: str | bytes, xpath_expr:str, ns_dict:str) -> l
     tree = etree.XML(str(record_xml))
     logger.debug(ns_dict)
     logger.debug(xpath_expr)
+    logger.debug(record_xml)
     vals = tree.xpath(xpath_expr, namespaces=ns_dict)
     #logger.debug(vals)
     #logger.debug([is_valid_url(x) for x in vals])
-    urls = stringify_xpath_result(tree.xpath(xpath_expr, namespaces = ns_dict))
+    for val in vals:
+        logger.debug(f"{val} is valid: {is_valid_url(val)}")
+    urls = stringify_xpath_result(vals)
     if not isinstance(urls, list):
         urls = [urls]
     return list(filter(is_valid_url, urls))  
@@ -345,6 +348,9 @@ def save_representation_file(record:OAIItem, metadata_format:str, config:dict):
                                   config["fetch_namespaces"])
     if len(file_uris) == 0:
         logger.warning(f"Applying {config['fetch_xpath']} returned 0 valid URL values")
+        shutil.rmtree(record_path)
+        return False
+    
     for uri in file_uris:
         logger.info(f"getting uri {uri}")
         uri_type = urlparse(uri).scheme
@@ -371,6 +377,7 @@ def save_representation_file(record:OAIItem, metadata_format:str, config:dict):
         with open(file_path, "w") as f:
             logger.info(f"saving {uri} @ {file_path}")
             f.write(text)
+    return True
         
 
 
@@ -446,19 +453,28 @@ def main():
                 # list identifiers
                 identifiers = get_identifiers(scythe, set_, config)
                 formats = list(scythe.list_metadata_formats())
+
                 for identifier in identifiers:
                     clear_existing_identifier(identifier, config)
                     #formats = repeat_if_failed(partial(scythe.list_metadata_formats, identifier), 1)
+                    record = repeat_if_failed(partial(scythe.get_record, identifier, config["metadata_format"]), 1, IdDoesNotExist)
+                    if not save_representation_file(record, config["metadata_format"], config):
+                        logger.warning("Representation file could not be saved... skipping...")
+                        continue # skip to next identifier
+                    
+                    save_metadata_record(record, config["metadata_format"], config)
                     for mformat in formats:
                         mprefix = mformat.metadataPrefix
+                        if mprefix == config["metadata_format"]:
+                            continue
+                        
                         record = repeat_if_failed(partial(scythe.get_record, identifier, mprefix), 1, IdDoesNotExist)
                         if isinstance(record, Exception):
                             logger.warning(f"Skipping metadata format {mformat} for {identifier} due to {record}")
                             continue
 
                         save_metadata_record(record, mprefix, config)
-                        if mprefix == config["metadata_format"]:
-                            save_representation_file(record, mprefix, config)
+                        
                             
         if config["mode"] == "harvest":
             update_last_run(value = config["_until"])
