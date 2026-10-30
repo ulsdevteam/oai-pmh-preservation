@@ -47,6 +47,18 @@ log = logger
 identifiers_being_updated = set()
 request_client = None
 
+def stringify_xpath_result(x) -> str | list[str]:
+    if isinstance(x, list):
+        return [stringify_xpath_result(i) for i in x]
+    if isinstance(x, tuple):
+        return tuple(stringify_xpath_result(i) for i in x)
+    if isinstance(x, str):
+        return x 
+    if isinstance(x, etree._Element):
+        return x.text
+        
+    return None
+
 def is_valid_url(url:str):
     """
     checks if url provided is valid url 
@@ -222,6 +234,8 @@ def get_record_header_info(basepath:Path | str, record: OAIItem) -> (Path | str,
     record_path = os.path.join(basepath, identifier) + ".pax"
     return record_path, identifier
 
+
+
 def save_metadata_record(record:OAIItem, metadata_format:str, config: dict):
     """
     Save <metadata_format> metadata file which is associated 
@@ -261,9 +275,12 @@ def extract_file_uris(record_xml: str | bytes, xpath_expr:str, ns_dict:str) -> l
     logger.debug(ns_dict)
     logger.debug(xpath_expr)
     vals = tree.xpath(xpath_expr, namespaces=ns_dict)
-    logger.debug(vals)
-    logger.debug([is_valid_url(x) for x in vals])
-    return list(filter(is_valid_url, tree.xpath(xpath_expr, namespaces=ns_dict)))  
+    #logger.debug(vals)
+    #logger.debug([is_valid_url(x) for x in vals])
+    urls = stringify_xpath_result(tree.xpath(xpath_expr, namespaces = ns_dict))
+    if not isinstance(urls, list):
+        urls = [urls]
+    return list(filter(is_valid_url, urls))  
 
 def get_default_http_client():
     # return an authenticated httpx client
