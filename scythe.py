@@ -40,12 +40,24 @@ except ImportError:
         raise SystemExit(1)
 
 #setup logging
-logging.basicConfig(level = logging.INFO)
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
-log = logger
+#logging.basicConfig(level = logging.INFO)
+#logging.getLogger().setLevel(logging.INFO)
+logger = None
+log = None
 identifiers_being_updated = set()
 request_client = None
+
+def stringify_xpath_result(x) -> str | list[str]:
+    if isinstance(x, list):
+        return [stringify_xpath_result(i) for i in x]
+    if isinstance(x, tuple):
+        return tuple(stringify_xpath_result(i) for i in x)
+    if isinstance(x, str):
+        return x 
+    if isinstance(x, etree._Element):
+        return "".join(x.itertext())
+        
+    return None
 
 def is_valid_url(url:str):
     """
@@ -66,15 +78,22 @@ def preprocess_config(config:dict):
 
     - storage_directory: path provided converted to absolute path
     """
-    storage_dir = config.get("storage_directory")
-    
-    if storage_dir is not None:
-        abspath = os.path.abspath(config["storage_directory"])
-        if abspath != config["storage_directory"]:
-            log.warn(f"path {storage_dir} "
+    storage_dir = config.get("storage_directory")   
+    if storage_dir is None:
+        # use oaipmh-storage as default directory. 
+        logger.warning("No storage_directory found, using folder oaipmh-storage...")
+        storage_dir = "oaipmh-storage"
+        # Create folder for default behavior if one does not exist
+        os.makedirs(storage_dir, exist_ok=True) 
+            
+    abspath = os.path.abspath(storage_dir)
+    if abspath != storage_dir:
+        log.warning(f"path {storage_dir} "
                 f"is ambiguous. Using path {abspath}")
-        config["storage_directory"] = abspath
-    #config["_lockfile_path"] 
+    config["storage_directory"] = abspath
+    if not os.path.exists(abspath):
+        raise Exception(f"{abspath} folder does not exist. Create folder and re run script...")
+        
             
 
 def load_config(conf_location : str | Path = "config.txt") -> dict:
@@ -85,22 +104,23 @@ def load_config(conf_location : str | Path = "config.txt") -> dict:
     Note: namespaces is a table in config toml and gets translated
         as a dictionary which is desired behavior
     """
-    defaults = dict()
+    defaults = {"mode": "harvest", "log_level": "WARNING"}
     last_run = load_last_run(state_location = "state.txt")
     today = datetime.now()
-    
+    required = {"base_url", "metadata_format", "fetch_xpath"}
+
     with open(conf_location, "rb") as conf_file:
         conf = tomllib.load(conf_file)
         used_defaults = {(k,v) for k, v in defaults.items()
             if k not in conf}
         #last_run, today = None, None
         #if conf.get("fetch_all") == 1:
-        if conf.get("mode") is None or conf["mode"] == "harvest": 
+        if conf.get("mode") is None or conf["mode"] == "harvest":
             conf["_from"] = last_run
             conf["_until"] = conf.get("until", today)
         elif conf.get("mode") == "fetch":
             conf["_from"] = conf.get("from", None)
-            conf["_until"] = conf.get("until", None) 
+            conf["_until"] = conf.get("until", None)
         
         if isinstance(conf["_from"], str):
             conf["_from"] = datetime.fromisoformat(conf["_from"])
@@ -109,9 +129,18 @@ def load_config(conf_location : str | Path = "config.txt") -> dict:
             conf["_until"] = datetime.fromisoformat(conf["_until"])
         #print(last_run)
         #raise SystemExit(1)
+        if not all(x in conf for x in required):
+            raise Exception(f"Missing parameters: {required - set(conf.keys())}")
+        
+        full_conf = defaults | conf
+
+        logging.basicConfig(level=full_conf["log_level"])
+        global logger, log # mostly for annotation purposes
+        logger = logging.getLogger(__name__)
+        log = logger
         logging.info(f"conf provided: {conf}")
         logging.info(f"Using defaults: {used_defaults}")
-        return defaults | conf
+        return full_conf
 
 def load_last_run(state_location : Path | str = "state.txt") -> str | datetime | None:
     """
@@ -127,7 +156,7 @@ def load_last_run(state_location : Path | str = "state.txt") -> str | datetime |
             return last_run_date
             
     except (FileNotFoundError, ValueError):
-        log.warn("State file not found or invalid format. " 
+        log.warning("State file not found or invalid format. " 
             "Defaulting to fetching from earliest record.")
         return None
     
@@ -214,6 +243,8 @@ def get_record_header_info(basepath:Path | str, record: OAIItem) -> (Path | str,
     record_path = os.path.join(basepath, identifier) + ".pax"
     return record_path, identifier
 
+
+
 def save_metadata_record(record:OAIItem, metadata_format:str, config: dict):
     """
     Save <metadata_format> metadata file which is associated 
@@ -232,10 +263,11 @@ def save_metadata_record(record:OAIItem, metadata_format:str, config: dict):
         log.info(f"writing file: {metadata_file_path}")
         tmp_tree = etree.fromstring(str(record))
         tmp_tree = tmp_tree.find("ns:metadata", namespaces={'ns': 'http://www.openarchives.org/OAI/2.0/'})
-        tmp_tree = tmp_tree[0] # first child
-        
-        f.write(etree.tostring(tmp_tree).decode())  # Save as string for now
-    
+        if tmp_tree is not None and len(tmp_tree) > 0:
+            tmp_tree = tmp_tree[0] # first child
+            f.write(etree.tostring(tmp_tree).decode())  # Save as string for now
+        else:
+            logger.warning("No metadata record in OAI-PMH response, skipping....") 
 
 
 def extract_file_uris(record_xml: str | bytes, xpath_expr:str, ns_dict:str) -> list[str]:
@@ -251,9 +283,16 @@ def extract_file_uris(record_xml: str | bytes, xpath_expr:str, ns_dict:str) -> l
     tree = etree.XML(str(record_xml))
     logger.debug(ns_dict)
     logger.debug(xpath_expr)
+    logger.debug(record_xml)
     vals = tree.xpath(xpath_expr, namespaces=ns_dict)
-    logger.debug(vals, [is_valid_url(x) for x in vals])
-    return list(filter(is_valid_url, tree.xpath(xpath_expr, namespaces=ns_dict)))  
+    #logger.debug(vals)
+    #logger.debug([is_valid_url(x) for x in vals])
+    for val in vals:
+        logger.debug(f"{val} is valid: {is_valid_url(val)}")
+    urls = stringify_xpath_result(vals)
+    if not isinstance(urls, list):
+        urls = [urls]
+    return list(filter(is_valid_url, urls))  
 
 def get_default_http_client():
     # return an authenticated httpx client
@@ -316,7 +355,11 @@ def save_representation_file(record:OAIItem, metadata_format:str, config:dict):
         os.makedirs(files_folder, exist_ok = True)
     file_uris = extract_file_uris(record, config["fetch_xpath"],
                                   config["fetch_namespaces"])
-    logger.info(file_uris)
+    if len(file_uris) == 0:
+        logger.warning(f"Applying {config['fetch_xpath']} returned 0 valid URL values")
+        shutil.rmtree(record_path)
+        return False
+    
     for uri in file_uris:
         logger.info(f"getting uri {uri}")
         uri_type = urlparse(uri).scheme
@@ -343,6 +386,7 @@ def save_representation_file(record:OAIItem, metadata_format:str, config:dict):
         with open(file_path, "w") as f:
             logger.info(f"saving {uri} @ {file_path}")
             f.write(text)
+    return True
         
 
 
@@ -361,13 +405,14 @@ def get_identifiers(scythe, set_, config):
     # OAI-DC is guaranteed to give exhaustive list of formats that match requirement
     
     mprefix = "oai_dc"
-    logger.info(config["_from"], config["_until"])
+    logger.info(f'fetching {config["_from"]}...{config["_until"]}')
     identifier_fetch = scythe.list_identifiers(
                 metadata_prefix = mprefix,
                 from_ = config["_from"],   
                 until=config["_until"], set_ = set_)
-    identifier_fetch = islice(identifier_fetch,
-                             config["limit_entries"])
+    if config.get("limit_entries") is not None and config.get("limit_entries") != 0:
+        identifier_fetch = islice(identifier_fetch, config["limit_entries"])
+    
     for header in identifier_fetch:
         identifiers.add(header.identifier)
     return identifiers
@@ -399,7 +444,7 @@ def repeat_if_failed(callable, timeout, skip_error = None):
             timeout *= 1.5
 
 def main():
-    config = load_config("config.toml")
+    config = load_config("minimal.toml")
     preprocess_config(config)
     lockfile_path = os.path.join(config["storage_directory"], ".modify_lock")
     if not create_lock_file(lockfile_path):
@@ -407,7 +452,8 @@ def main():
         return
     try:
         with Scythe(config["base_url"]) as scythe:
-            authenticate_scythe(scythe, config["auth"])
+            if config.get("auth") is not None:
+                authenticate_scythe(scythe, config["auth"])
         
             set_list = [None]
 
@@ -417,19 +463,28 @@ def main():
                 # list identifiers
                 identifiers = get_identifiers(scythe, set_, config)
                 formats = list(scythe.list_metadata_formats())
+
                 for identifier in identifiers:
                     clear_existing_identifier(identifier, config)
                     #formats = repeat_if_failed(partial(scythe.list_metadata_formats, identifier), 1)
+                    record = repeat_if_failed(partial(scythe.get_record, identifier, config["metadata_format"]), 1, IdDoesNotExist)
+                    if not save_representation_file(record, config["metadata_format"], config):
+                        logger.warning("Representation file could not be saved... skipping...")
+                        continue # skip to next identifier
+                    
+                    save_metadata_record(record, config["metadata_format"], config)
                     for mformat in formats:
                         mprefix = mformat.metadataPrefix
+                        if mprefix == config["metadata_format"]:
+                            continue
+                        
                         record = repeat_if_failed(partial(scythe.get_record, identifier, mprefix), 1, IdDoesNotExist)
                         if isinstance(record, Exception):
                             logger.warning(f"Skipping metadata format {mformat} for {identifier} due to {record}")
                             continue
 
                         save_metadata_record(record, mprefix, config)
-                        if mprefix == config["metadata_format"]:
-                            save_representation_file(record, mprefix, config)
+                        
                             
         if config["mode"] == "harvest":
             update_last_run(value = config["_until"])
