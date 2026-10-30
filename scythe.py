@@ -132,8 +132,9 @@ def load_config(conf_location : str | Path = "config.txt") -> dict:
             logging.basicConfig(level=log_level) 
         else:
             logging.basicConfig(level=logging.WARNING)
-        global logger # mostly for annotation purposes
+        global logger, log # mostly for annotation purposes
         logger = logging.getLogger(__name__)
+        log = logger
         logging.info(f"conf provided: {conf}")
         logging.info(f"Using defaults: {used_defaults}")
         return defaults | conf
