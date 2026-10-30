@@ -68,13 +68,21 @@ def preprocess_config(config:dict):
     """
     storage_dir = config.get("storage_directory")
     
-    if storage_dir is not None:
-        abspath = os.path.abspath(config["storage_directory"])
-        if abspath != config["storage_directory"]:
-            log.warn(f"path {storage_dir} "
+    if storage_dir is None:
+        # use oaipmh-storage as default directory. 
+        logger.warning("No storage_directory found, using folder oaipmh-storage...")
+        storage_dir = "oaipmh-storage"
+        # Create folder for default behavior if one does not exist
+        os.makedirs(storage_dir, exist_ok=True) 
+            
+    abspath = os.path.abspath(config["storage_directory"])
+    if abspath != storage_dir:
+        log.warn(f"path {storage_dir} "
                 f"is ambiguous. Using path {abspath}")
-        config["storage_directory"] = abspath
-    #config["_lockfile_path"] 
+    config["storage_directory"] = abspath
+    if not os.path.exists(abspath):
+        raise Exception(f"{abspath} folder does not exist. Create folder and re run script...")
+        
             
 
 def load_config(conf_location : str | Path = "config.txt") -> dict:
@@ -232,10 +240,11 @@ def save_metadata_record(record:OAIItem, metadata_format:str, config: dict):
         log.info(f"writing file: {metadata_file_path}")
         tmp_tree = etree.fromstring(str(record))
         tmp_tree = tmp_tree.find("ns:metadata", namespaces={'ns': 'http://www.openarchives.org/OAI/2.0/'})
-        tmp_tree = tmp_tree[0] # first child
-        
-        f.write(etree.tostring(tmp_tree).decode())  # Save as string for now
-    
+        if len(tmp_tree) > 0:
+            tmp_tree = tmp_tree[0] # first child
+            f.write(etree.tostring(tmp_tree).decode())  # Save as string for now
+        else:
+            logger.warning("No metadata record in OAI-PMH response, skipping....") 
 
 
 def extract_file_uris(record_xml: str | bytes, xpath_expr:str, ns_dict:str) -> list[str]:
@@ -316,7 +325,8 @@ def save_representation_file(record:OAIItem, metadata_format:str, config:dict):
         os.makedirs(files_folder, exist_ok = True)
     file_uris = extract_file_uris(record, config["fetch_xpath"],
                                   config["fetch_namespaces"])
-    logger.info(file_uris)
+    if len(file_uris) == 0:
+        logger.warning(f"Applying {config['fetch_xpath']} returned 0 valid URL values")
     for uri in file_uris:
         logger.info(f"getting uri {uri}")
         uri_type = urlparse(uri).scheme
@@ -361,13 +371,14 @@ def get_identifiers(scythe, set_, config):
     # OAI-DC is guaranteed to give exhaustive list of formats that match requirement
     
     mprefix = "oai_dc"
-    logger.info(config["_from"], config["_until"])
+    logger.info(f'fetching {config["_from"]}...{config["_until"]}')
     identifier_fetch = scythe.list_identifiers(
                 metadata_prefix = mprefix,
                 from_ = config["_from"],   
                 until=config["_until"], set_ = set_)
-    identifier_fetch = islice(identifier_fetch,
-                             config["limit_entries"])
+    if config.get("limit_entries") is not None and config.get("limit_en/tries") != 0:
+        identifier_fetch = islice(identifier_fetch, config["limit_entries"])
+    
     for header in identifier_fetch:
         identifiers.add(header.identifier)
     return identifiers
