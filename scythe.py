@@ -128,7 +128,7 @@ def load_config(conf_location : str | Path = "config.txt") -> dict:
             conf["_until"] = datetime.fromisoformat(conf["_until"])
         #print(last_run)
         #raise SystemExit(1)
-        if config.get("log_level") is not None:
+        if conf.get("log_level") is not None:
             logging.basicConfig(level=log_level) 
         else:
             logging.basicConfig(level=logging.WARNING)
@@ -440,7 +440,7 @@ def repeat_if_failed(callable, timeout, skip_error = None):
             timeout *= 1.5
 
 def main():
-    config = load_config("config.toml")
+    config = load_config("minimal.toml")
     preprocess_config(config)
     lockfile_path = os.path.join(config["storage_directory"], ".modify_lock")
     if not create_lock_file(lockfile_path):
