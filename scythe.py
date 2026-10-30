@@ -40,9 +40,9 @@ except ImportError:
         raise SystemExit(1)
 
 #setup logging
-logging.basicConfig(level = logging.INFO)
+#logging.basicConfig(level = logging.INFO)
+logging.setLevel(logging.INFO)
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 log = logger
 identifiers_being_updated = set()
 request_client = None
@@ -79,7 +79,10 @@ def preprocess_config(config:dict):
     - storage_directory: path provided converted to absolute path
     """
     storage_dir = config.get("storage_directory")
-    
+    if config.get("log_level") is not None:
+        logging.basicConfig(level=log_level) 
+        logging.setLevel(config.get(log_level))
+        logger.setLevel(config.get(log_level))  
     if storage_dir is None:
         # use oaipmh-storage as default directory. 
         logger.warning("No storage_directory found, using folder oaipmh-storage...")

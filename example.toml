@@ -29,6 +29,9 @@
 # only for debug purposes
 #limit_entries = 0
 
+# logging level to be shown to screen
+#log_level = "DEBUG"
+
 #key = value pairs for aliases for xml namespaces used in fetch_xpath
 # OPTIONAL,
 [fetch_namespaces]

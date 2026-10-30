@@ -5,3 +5,7 @@ oaipmh-storage/*
 config.txt
 state.txt
 error.html
+.venv/
+__pycache__/
+config.toml
+preservica-opex-parser/
