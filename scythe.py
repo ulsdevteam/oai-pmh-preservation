@@ -86,7 +86,7 @@ def preprocess_config(config:dict):
         # Create folder for default behavior if one does not exist
         os.makedirs(storage_dir, exist_ok=True) 
             
-    abspath = os.path.abspath(config["storage_directory"])
+    abspath = os.path.abspath(storage_dir)
     if abspath != storage_dir:
         log.warning(f"path {storage_dir} "
                 f"is ambiguous. Using path {abspath}")
