@@ -41,9 +41,9 @@ except ImportError:
 
 #setup logging
 #logging.basicConfig(level = logging.INFO)
-logging.setLevel(logging.INFO)
-logger = logging.getLogger(__name__)
-log = logger
+#logging.getLogger().setLevel(logging.INFO)
+logger = None
+log = None
 identifiers_being_updated = set()
 request_client = None
 
@@ -78,11 +78,7 @@ def preprocess_config(config:dict):
 
     - storage_directory: path provided converted to absolute path
     """
-    storage_dir = config.get("storage_directory")
-    if config.get("log_level") is not None:
-        logging.basicConfig(level=log_level) 
-        logging.setLevel(config.get(log_level))
-        logger.setLevel(config.get(log_level))  
+    storage_dir = config.get("storage_directory")   
     if storage_dir is None:
         # use oaipmh-storage as default directory. 
         logger.warning("No storage_directory found, using folder oaipmh-storage...")
@@ -132,6 +128,12 @@ def load_config(conf_location : str | Path = "config.txt") -> dict:
             conf["_until"] = datetime.fromisoformat(conf["_until"])
         #print(last_run)
         #raise SystemExit(1)
+        if config.get("log_level") is not None:
+            logging.basicConfig(level=log_level) 
+        else:
+            logging.basicConfig(level=logging.WARNING)
+        global logger # mostly for annotation purposes
+        logger = logging.getLogger(__name__)
         logging.info(f"conf provided: {conf}")
         logging.info(f"Using defaults: {used_defaults}")
         return defaults | conf
