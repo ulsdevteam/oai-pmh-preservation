@@ -55,7 +55,7 @@ def stringify_xpath_result(x) -> str | list[str]:
     if isinstance(x, str):
         return x 
     if isinstance(x, etree._Element):
-        return x.text
+        return "".join(x.itertext())
         
     return None
 
