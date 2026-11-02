@@ -94,7 +94,13 @@ def preprocess_config(config:dict):
     if not os.path.exists(abspath):
         raise Exception(f"{abspath} folder does not exist. Create folder and re run script...")
         
-            
+def setup_logger(log_level = None):
+    if log_level is None:
+        log_level = "WARNING"
+    logging.basicConfig(level=log_level)
+    global logger, log # mostly for annotation purposes
+    logger = logging.getLogger(__name__)
+    log = logger
 
 def load_config(conf_location : str | Path = "config.txt") -> dict:
     """
@@ -105,14 +111,16 @@ def load_config(conf_location : str | Path = "config.txt") -> dict:
         as a dictionary which is desired behavior
     """
     defaults = {"mode": "harvest", "log_level": "WARNING"}
-    last_run = load_last_run(state_location = "state.txt")
-    today = datetime.now()
     required = {"base_url", "metadata_format", "fetch_xpath"}
 
     with open(conf_location, "rb") as conf_file:
         conf = tomllib.load(conf_file)
+        setup_logger(conf.get("log_level"))
         used_defaults = {(k,v) for k, v in defaults.items()
             if k not in conf}
+
+        last_run = load_last_run(state_location = "state.txt")
+        today = datetime.now()
         #last_run, today = None, None
         #if conf.get("fetch_all") == 1:
         if conf.get("mode") is None or conf["mode"] == "harvest":
@@ -134,10 +142,6 @@ def load_config(conf_location : str | Path = "config.txt") -> dict:
         
         full_conf = defaults | conf
 
-        logging.basicConfig(level=full_conf["log_level"])
-        global logger, log # mostly for annotation purposes
-        logger = logging.getLogger(__name__)
-        log = logger
         logging.info(f"conf provided: {conf}")
         logging.info(f"Using defaults: {used_defaults}")
         return full_conf
@@ -449,7 +453,7 @@ def repeat_if_failed(callable, timeout, skip_error = None):
             timeout *= 1.5
 
 def main():
-    config = load_config("minimal.toml")
+    config = load_config("config.toml")
     preprocess_config(config)
     lockfile_path = os.path.join(config["storage_directory"], ".modify_lock")
     if not create_lock_file(lockfile_path):
