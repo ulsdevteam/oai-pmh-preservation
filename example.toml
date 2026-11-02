@@ -25,12 +25,13 @@
 # OPTIONAL: Default = 0
 #skip_count = 0
 
-# Limit maximum number of records fetched per run. Partial harvests are recommended 
-# only for debug purposes
+# Limit maximum number of records fetched per run. Useful for debugging or doing a dry run
+# Running with harvest does not update stored "last harvest date"
+# OPTIONAL: 
 #limit_entries = 0
 
 # logging level to be shown to screen
-# default level INFO
+# OPTIONAL: default level WARNING
 #log_level = "DEBUG"
 
 # Application can be run in 2 modes.
@@ -39,13 +40,13 @@
 # default mode is to harvest with start time being None and end time being now
 #mode = "fetch"
 #from = "1989-03-24T12:35:51"
-#to = "2025-01-01"
+#until = "2025-01-01"
 #OR 
 #mode = "harvest"
 #until = "2020-01-01"
 
 #key = value pairs for aliases for xml namespaces used in fetch_xpath
-# OPTIONAL,
+# OPTIONAL, but highly recommended for xpath readibility
 [fetch_namespaces]
 dc = "http://purl.org/dc/elements/1.1/"
 
@@ -58,6 +59,7 @@ dc = "http://purl.org/dc/elements/1.1/"
 # supported login types
 # - basic: HTTP basic authentication
 # - cookie: a login form page, where on form submit a cookie can be gathered to be associated with client
+# Required if auth table present in toml (can be set as empty list to indicate use no auth methods)
 #login_types = ["basic", "cookie"]
 
 # login form page for cookie authentication
