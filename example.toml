@@ -29,6 +29,21 @@
 # only for debug purposes
 #limit_entries = 0
 
+# logging level to be shown to screen
+# default level INFO
+#log_level = "DEBUG"
+
+# Application can be run in 2 modes.
+# 1. "fetch" -> fetch recorcds between "from" and "until". This is stateless
+# 2. "harvest" -> fetch records between time in state.txt and until/now. state.txt represents last time harvest finished
+# default mode is to harvest with start time being None and end time being now
+#mode = "fetch"
+#from = "1989-03-24T12:35:51"
+#to = "2025-01-01"
+#OR 
+#mode = "harvest"
+#until = "2020-01-01"
+
 #key = value pairs for aliases for xml namespaces used in fetch_xpath
 # OPTIONAL,
 [fetch_namespaces]
