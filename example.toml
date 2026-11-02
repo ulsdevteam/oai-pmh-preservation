@@ -94,6 +94,8 @@ dc = "http://purl.org/dc/elements/1.1/"
 # config options for when uri starts with sftp://...
 [upath-opts.sftp]
 
+# generate_opex operates independently from scythe and operates only on the opex subtable of config
+# This allows the 2 scripts to operate independently, but creates some redundancy in parameters
 # config variables to control parameters of generated opex of fetched 
 # content
 [opex]
