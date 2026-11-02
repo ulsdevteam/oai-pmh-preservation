@@ -465,6 +465,7 @@ def main():
     if not create_lock_file(lockfile_path):
         logging.error("Lock File found, another program is currently modifying the directories...")
         return
+    last_fetched_record = None
     try:
         with Scythe(config["base_url"]) as scythe:
             if config.get("auth") is not None:
@@ -499,10 +500,17 @@ def main():
                             continue
 
                         save_metadata_record(record, mprefix, config)
+                    last_fetched_record = record
                         
                             
         if config["mode"] == "harvest":
-            update_last_run(value = config["_until"])
+            if config.get("limit_entries") is not None:
+                logger.warning("Limit entries used in conjunction with harvest. This can create a partially fetched state. Not updating state.txt....")
+                last_timestamp = last_fetched_record.header.datestamp
+                logger.warning(f"Last record fetched timestamp: {last_timestamp}.")
+                logger.warning("OAI-PMH feeds do not guarantee chronological order of fetch. So fetching until this timestamp may or may not yield a similar fetch")
+            else:
+                update_last_run(value = config["_until"])
     finally:
         release_lock_file(lockfile_path)
 
