@@ -343,13 +343,19 @@ def get_web_resource(uri) -> (str, str):
         response = client.get(uri)
         if response.status_code == 429:
             response = _retry_for_too_many_requests(client, uri)
+        if response.status_code == 403:
+            logger.error(f"Encountered 403: Forbidden for {uri}. Try checking auth section"
+                         " of config to ensure it works correctly")
         response.raise_for_status()
         ret_text = response.text
         ret_filename = extract_filename(response)
+    # let it fail if fetch fails
     except Exception as e:
         ret_text = None
         ret_filename = None
-        logger.warning(f"failed to get {uri} due to {e}")
+        logger.error(f"Fetching {uri} failed due to {e}. This is fatal."
+                     "Stopping....")
+        raise e
     return ret_text, ret_filename 
 
 def save_representation_file(record:OAIItem, metadata_format:str, config:dict):
